@@ -1,0 +1,173 @@
+{
+	package query
+
+	import (
+		"fmt"
+		"strconv"
+	)
+
+	func resolveCondOperator(op any) (CondOperator, error) {
+		switch string(op.([]byte)) {
+			case "AND", "and":
+				return And, nil
+			case "OR", "or":
+				return Or, nil
+			default:
+				return 0, fmt.Errorf("unknown conditional operator %q", op)
+		}
+	}
+
+	func resolveCompareOperator(op any) (CompareOperator, error) {
+		switch string(op.([]byte)) {
+			case ">=":
+				return GreaterThanOrEqual, nil
+			case ">":
+				return GreaterThan, nil
+			case "<=":
+				return LessThanOrEqual, nil
+			case "<":
+				return LessThan, nil
+			case "!:", "!=":
+				return NotEqual, nil
+			case ":", "=":
+				return Equal, nil
+			default:
+				return 0, fmt.Errorf("unknown compare operator %q", op)
+		}
+	}
+
+}
+
+Expr <- OrExpr
+
+OrExpr <- left:AndExpr rest:(_ ( OrOp ) _ AndExpr)* {
+	expr := left
+	for _, r := range rest.([]any) {
+		parts := r.([]any)
+		// parts[1] holds the operator token, parts[3] holds the next AndExpr.
+		//op := string(parts[1].([]byte))
+		op, err := resolveCondOperator(parts[1])
+		if err != nil {
+			return nil, err
+		}
+		right := parts[3]
+		expr = &BinaryExpr{
+			Left:  expr.(Expr),
+			Op:    op,
+			Right: right.(Expr),
+		}
+	}
+	return expr, nil
+}
+
+OrOp <- ("OR" / "or")
+
+AndExpr <- left:NotExpr rest:(_ ( op:AndOp ) _ NotExpr)* {
+	expr := left
+	for _, r := range rest.([]any) {
+		parts := r.([]any)
+		//op := string(parts[1].([]byte))
+		op, err := resolveCondOperator(parts[1])
+		if err != nil {
+			return nil, err
+		}
+		right := parts[3]
+		expr = &BinaryExpr{
+			Left:  expr.(Expr),
+			Op:    op,
+			Right: right.(Expr),
+		}
+	}
+	return expr, nil
+}
+
+AndOp <- ("AND" / "and")
+
+NotExpr <- ("NOT" / "not") _ expr:Primary {
+	return &NotExpr{Expr: expr.(Expr)}, nil
+} / Primary
+
+Primary <- ParenExpr / FieldExpr / Term
+
+ParenExpr <- '(' _ expr:Expr _ ')' { return expr.(Expr), nil }
+
+FieldExpr <- field:Identifier _ op:CmpOp _ value:Value {
+	opR, err := resolveCompareOperator(op)
+	if err != nil {
+		return nil, err
+	}
+
+	var val any
+	switch v := value.(type) {
+		case []byte:
+			val = &StringLiteral{Value: string(v)}
+		case string:
+			val = &StringLiteral{Value: v}
+		default:
+			val = value
+	}
+
+	return &FieldExpr{
+		Field: field.(string),
+		Op:    opR,
+		Value: val.(Expr),
+	}, nil
+}
+
+Term <- term:Identifier { return &StringLiteral{Value: term.(string)}, nil }
+      / term:String     { return &StringLiteral{Value: term.(string)}, nil }
+
+Value <- OneOfExpr / String / Number / Identifier
+
+Identifier <- AlphaNumeric ("." AlphaNumeric)* { return string(c.text), nil }
+
+AlphaNumeric <- [a-zA-Z_][a-zA-Z0-9_]*
+
+Integer <- '0' / NonZeroDecimalDigit DecimalDigit+
+
+Number <- '-'? Integer ( '.' DecimalDigit+ )? {
+	if val, err := strconv.Atoi(string(c.text)); err == nil {
+		return &IntegerLiteral{Value: int64(val)}, nil
+	}
+
+	if val, err := strconv.ParseFloat(string(c.text), 64); err == nil {
+		return &NumberLiteral{Value: val}, nil
+	}
+
+	return nil, fmt.Errorf("invalid number literal: %q", string(c.text))
+} 
+
+DecimalDigit <- [0-9]
+
+NonZeroDecimalDigit <- [1-9]
+
+String <- '"' ( [^"\\] / '\\' . )* '"' {
+	val, err := strconv.Unquote(string(c.text))
+	if err != nil {
+		return nil, err
+	}
+	return &StringLiteral{Value: val}, nil
+}
+
+CmpOp <- ( ">=" / ">" / "<=" / "<" / "!:" / "!=" / ":" / "=" )
+
+OneOfExpr <- '[' _ values:OneOfValues _ ']' {
+	if values == nil {
+		return &OneOfExpr{Values: nil}, nil
+	}
+
+	return &OneOfExpr{Values: values.([]Expr)}, nil
+}
+
+OneOfValues <- head:Value tail:(_ ',' _ Value)* {
+	vals := []Expr{head.(Expr)}
+
+	for _, t := range tail.([]any) {
+		// t is an array where index 3 holds the next Value.
+		vals = append(vals, t.([]any)[3].(Expr))
+	}
+
+	return vals, nil
+}
+
+_ <- [ \t\r\n]*
