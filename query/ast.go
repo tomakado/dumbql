@@ -15,7 +15,7 @@ type Expr interface {
 // BinaryExpr represents a binary operation (AND, OR) between two expressions.
 type BinaryExpr struct {
 	Left  Expr
-	Op    CondOperator // "AND" or "OR"
+	Op    BooleanOperator // "AND" or "OR"
 	Right Expr
 }
 
@@ -35,7 +35,7 @@ func (n *NotExpr) String() string {
 // FieldExpr represents a field query, e.g. status:200.
 type FieldExpr struct {
 	Field string
-	Op    CompareOperator
+	Op    FieldOperator
 	Value Expr
 }
 
@@ -76,14 +76,14 @@ func (o *OneOfExpr) String() string {
 	return fmt.Sprintf("%v", o.Values)
 }
 
-type CondOperator uint8
+type BooleanOperator uint8
 
 const (
-	And CondOperator = iota + 1
+	And BooleanOperator = iota + 1
 	Or
 )
 
-func (c CondOperator) String() string {
+func (c BooleanOperator) String() string {
 	switch c {
 	case And:
 		return "and"
@@ -94,10 +94,10 @@ func (c CondOperator) String() string {
 	}
 }
 
-type CompareOperator uint8
+type FieldOperator uint8
 
 const (
-	Equal CompareOperator = iota + 1
+	Equal FieldOperator = iota + 1
 	NotEqual
 	GreaterThan
 	GreaterThanOrEqual
@@ -105,7 +105,7 @@ const (
 	LessThanOrEqual
 )
 
-func (c CompareOperator) String() string {
+func (c FieldOperator) String() string {
 	switch c {
 	case Equal:
 		return "="

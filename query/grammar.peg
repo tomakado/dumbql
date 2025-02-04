@@ -6,7 +6,7 @@
 		"strconv"
 	)
 
-	func resolveCondOperator(op any) (CondOperator, error) {
+	func resolveBooleanOperator(op any) (BooleanOperator, error) {
 		switch string(op.([]byte)) {
 			case "AND", "and":
 				return And, nil
@@ -17,7 +17,7 @@
 		}
 	}
 
-	func resolveCompareOperator(op any) (CompareOperator, error) {
+	func resolveFieldOperator(op any) (FieldOperator, error) {
 		switch string(op.([]byte)) {
 			case ">=":
 				return GreaterThanOrEqual, nil
@@ -46,7 +46,7 @@ OrExpr <- left:AndExpr rest:(_ ( OrOp ) _ AndExpr)* {
 		parts := r.([]any)
 		// parts[1] holds the operator token, parts[3] holds the next AndExpr.
 		//op := string(parts[1].([]byte))
-		op, err := resolveCondOperator(parts[1])
+		op, err := resolveBooleanOperator(parts[1])
 		if err != nil {
 			return nil, err
 		}
@@ -67,7 +67,7 @@ AndExpr <- left:NotExpr rest:(_ ( op:AndOp ) _ NotExpr)* {
 	for _, r := range rest.([]any) {
 		parts := r.([]any)
 		//op := string(parts[1].([]byte))
-		op, err := resolveCondOperator(parts[1])
+		op, err := resolveBooleanOperator(parts[1])
 		if err != nil {
 			return nil, err
 		}
@@ -92,7 +92,7 @@ Primary <- ParenExpr / FieldExpr / Term
 ParenExpr <- '(' _ expr:Expr _ ')' { return expr.(Expr), nil }
 
 FieldExpr <- field:Identifier _ op:CmpOp _ value:Value {
-	opR, err := resolveCompareOperator(op)
+	opR, err := resolveFieldOperator(op)
 	if err != nil {
 		return nil, err
 	}
