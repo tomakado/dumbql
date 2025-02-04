@@ -29,7 +29,7 @@ type NotExpr struct {
 }
 
 func (n *NotExpr) String() string {
-	return fmt.Sprintf("not %s", n.Expr)
+	return fmt.Sprintf("(not %s)", n.Expr)
 }
 
 // FieldExpr represents a field query, e.g. status:200.

@@ -38,7 +38,9 @@
 
 }
 
-Expr <- OrExpr
+Expr <- _ e:OrExpr _ {
+	return e, nil
+}
 
 OrExpr <- left:AndExpr rest:(_ ( OrOp ) _ AndExpr)* {
 	expr := left
@@ -151,8 +153,8 @@ String <- '"' ( [^"\\] / '\\' . )* '"' {
 
 CmpOp <- ( ">=" / ">" / "<=" / "<" / "!:" / "!=" / ":" / "=" )
 
-OneOfExpr <- '[' _ values:OneOfValues _ ']' {
-	if values == nil {
+OneOfExpr <- '[' _ values:(OneOfValues)? _ ']' {
+	if values == nil || len(values.([]Expr)) == 0 {
 		return &OneOfExpr{Values: nil}, nil
 	}
 
