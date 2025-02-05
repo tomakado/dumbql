@@ -2,6 +2,7 @@
 	package query
 
 	import (
+		"bytes"
 		"fmt"
 		"strconv"
 	)
@@ -33,6 +34,17 @@
 				return Equal, nil
 			default:
 				return 0, fmt.Errorf("unknown compare operator %q", op)
+		}
+	}
+
+	func resolveOneOfValueType(val any) Expr {
+		switch v := val.(type) {
+		case Identifier:
+			return &StringLiteral{Value: string(v)}
+		case string:
+			return &StringLiteral{Value: v}
+		default:
+			return v.(Expr)
 		}
 	}
 
@@ -105,23 +117,26 @@ FieldExpr <- field:Identifier _ op:CmpOp _ value:Value {
 			val = &StringLiteral{Value: string(v)}
 		case string:
 			val = &StringLiteral{Value: v}
+		case Identifier:
+			val = &StringLiteral{Value: string(v)}
 		default:
 			val = value
 	}
 
 	return &FieldExpr{
-		Field: field.(string),
+		Field: field.(Identifier),
 		Op:    opR,
 		Value: val.(Expr),
 	}, nil
 }
 
-Term <- term:Identifier { return &StringLiteral{Value: term.(string)}, nil }
-      / term:String     { return &StringLiteral{Value: term.(string)}, nil }
+Term <- term:Identifier { return &StringLiteral{Value: string(term.(Identifier))}, nil }
+      / term:String     { return term, nil }
 
 Value <- OneOfExpr / String / Number / Identifier
+OneOfValue <- String / Number / Identifier
 
-Identifier <- AlphaNumeric ("." AlphaNumeric)* { return string(c.text), nil }
+Identifier <- AlphaNumeric ("." AlphaNumeric)* { return Identifier(c.text), nil }
 
 AlphaNumeric <- [a-zA-Z_][a-zA-Z0-9_]*
 
@@ -143,13 +158,25 @@ DecimalDigit <- [0-9]
 
 NonZeroDecimalDigit <- [1-9]
 
-String <- '"' ( [^"\\] / '\\' . )* '"' {
+String <- '"' StringValue '"' {
 	val, err := strconv.Unquote(string(c.text))
 	if err != nil {
 		return nil, err
 	}
 	return &StringLiteral{Value: val}, nil
 }
+
+StringValue <- ( !EscapedChar . / '\\' EscapeSequence )*
+
+EscapedChar <- [\x00-\x1f"\\]
+
+EscapeSequence <- SingleCharEscape / UnicodeEscape
+
+SingleCharEscape <- ["\\/bfnrt]
+
+UnicodeEscape <- 'u' HexDigit HexDigit HexDigit HexDigit
+
+HexDigit ← [0-9a-f]i
 
 CmpOp <- ( ">=" / ">" / "<=" / "<" / "!:" / "!=" / ":" / "=" )
 
@@ -161,12 +188,13 @@ OneOfExpr <- '[' _ values:(OneOfValues)? _ ']' {
 	return &OneOfExpr{Values: values.([]Expr)}, nil
 }
 
-OneOfValues <- head:Value tail:(_ ',' _ Value)* {
-	vals := []Expr{head.(Expr)}
+OneOfValues <- head:OneOfValue tail:(_ ',' _ OneOfValue)* {
+	vals := []Expr{resolveOneOfValueType(head)}
 
 	for _, t := range tail.([]any) {
 		// t is an array where index 3 holds the next Value.
-		vals = append(vals, t.([]any)[3].(Expr))
+		val := resolveOneOfValueType(t.([]any)[3])
+		vals = append(vals, val)
 	}
 
 	return vals, nil

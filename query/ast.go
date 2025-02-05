@@ -34,7 +34,7 @@ func (n *NotExpr) String() string {
 
 // FieldExpr represents a field query, e.g. status:200.
 type FieldExpr struct {
-	Field string
+	Field Identifier
 	Op    FieldOperator
 	Value Expr
 }
@@ -66,6 +66,12 @@ type IntegerLiteral struct {
 
 func (i *IntegerLiteral) String() string {
 	return fmt.Sprintf("%d", i.Value)
+}
+
+type Identifier string
+
+func (i Identifier) String() string {
+	return string(i)
 }
 
 type OneOfExpr struct {
