@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-// --- AST Definitions ---
+//go:generate pigeon -o parser.gen.go grammar.peg
 
 // Expr is the interface for all expressions.
 type Expr interface {

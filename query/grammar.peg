@@ -2,133 +2,29 @@
 	package query
 
 	import (
-		"bytes"
-		"fmt"
 		"strconv"
 	)
 
-	func resolveBooleanOperator(op any) (BooleanOperator, error) {
-		switch string(op.([]byte)) {
-			case "AND", "and":
-				return And, nil
-			case "OR", "or":
-				return Or, nil
-			default:
-				return 0, fmt.Errorf("unknown conditional operator %q", op)
-		}
-	}
-
-	func resolveFieldOperator(op any) (FieldOperator, error) {
-		switch string(op.([]byte)) {
-			case ">=":
-				return GreaterThanOrEqual, nil
-			case ">":
-				return GreaterThan, nil
-			case "<=":
-				return LessThanOrEqual, nil
-			case "<":
-				return LessThan, nil
-			case "!:", "!=":
-				return NotEqual, nil
-			case ":", "=":
-				return Equal, nil
-			default:
-				return 0, fmt.Errorf("unknown compare operator %q", op)
-		}
-	}
-
-	func resolveOneOfValueType(val any) Expr {
-		switch v := val.(type) {
-		case Identifier:
-			return &StringLiteral{Value: string(v)}
-		case string:
-			return &StringLiteral{Value: v}
-		default:
-			return v.(Expr)
-		}
-	}
-
 }
 
-Expr <- _ e:OrExpr _ {
-	return e, nil
-}
+Expr <- _ e:OrExpr _ { return e, nil }
 
-OrExpr <- left:AndExpr rest:(_ ( OrOp ) _ AndExpr)* {
-	expr := left
-	for _, r := range rest.([]any) {
-		parts := r.([]any)
-		// parts[1] holds the operator token, parts[3] holds the next AndExpr.
-		//op := string(parts[1].([]byte))
-		op, err := resolveBooleanOperator(parts[1])
-		if err != nil {
-			return nil, err
-		}
-		right := parts[3]
-		expr = &BinaryExpr{
-			Left:  expr.(Expr),
-			Op:    op,
-			Right: right.(Expr),
-		}
-	}
-	return expr, nil
-}
+OrExpr <- left:AndExpr rest:(_ ( OrOp ) _ AndExpr)* { return parseBooleanExpression(left, rest) }
 
 OrOp <- ("OR" / "or")
 
-AndExpr <- left:NotExpr rest:(_ ( op:AndOp ) _ NotExpr)* {
-	expr := left
-	for _, r := range rest.([]any) {
-		parts := r.([]any)
-		//op := string(parts[1].([]byte))
-		op, err := resolveBooleanOperator(parts[1])
-		if err != nil {
-			return nil, err
-		}
-		right := parts[3]
-		expr = &BinaryExpr{
-			Left:  expr.(Expr),
-			Op:    op,
-			Right: right.(Expr),
-		}
-	}
-	return expr, nil
-}
+AndExpr <- left:NotExpr rest:(_ ( op:AndOp ) _ NotExpr)* { return parseBooleanExpression(left, rest) }
 
 AndOp <- ("AND" / "and")
 
-NotExpr <- ("NOT" / "not") _ expr:Primary {
-	return &NotExpr{Expr: expr.(Expr)}, nil
-} / Primary
+NotExpr <- ("NOT" / "not") _ expr:Primary { return &NotExpr{Expr: expr.(Expr)}, nil }
+		/ Primary
 
 Primary <- ParenExpr / FieldExpr / Term
 
 ParenExpr <- '(' _ expr:Expr _ ')' { return expr.(Expr), nil }
 
-FieldExpr <- field:Identifier _ op:CmpOp _ value:Value {
-	opR, err := resolveFieldOperator(op)
-	if err != nil {
-		return nil, err
-	}
-
-	var val any
-	switch v := value.(type) {
-		case []byte:
-			val = &StringLiteral{Value: string(v)}
-		case string:
-			val = &StringLiteral{Value: v}
-		case Identifier:
-			val = &StringLiteral{Value: string(v)}
-		default:
-			val = value
-	}
-
-	return &FieldExpr{
-		Field: field.(Identifier),
-		Op:    opR,
-		Value: val.(Expr),
-	}, nil
-}
+FieldExpr <- field:Identifier _ op:CmpOp _ value:Value { return parseFieldExpression(field, op, value) }
 
 Term <- term:Identifier { return &StringLiteral{Value: string(term.(Identifier))}, nil }
       / term:String     { return term, nil }
@@ -142,29 +38,13 @@ AlphaNumeric <- [a-zA-Z_][a-zA-Z0-9_]*
 
 Integer <- '0' / NonZeroDecimalDigit DecimalDigit+
 
-Number <- '-'? Integer ( '.' DecimalDigit+ )? {
-	if val, err := strconv.Atoi(string(c.text)); err == nil {
-		return &IntegerLiteral{Value: int64(val)}, nil
-	}
-
-	if val, err := strconv.ParseFloat(string(c.text), 64); err == nil {
-		return &NumberLiteral{Value: val}, nil
-	}
-
-	return nil, fmt.Errorf("invalid number literal: %q", string(c.text))
-} 
+Number <- '-'? Integer ( '.' DecimalDigit+ )? { return parseNumber(c) } 
 
 DecimalDigit <- [0-9]
 
 NonZeroDecimalDigit <- [1-9]
 
-String <- '"' StringValue '"' {
-	val, err := strconv.Unquote(string(c.text))
-	if err != nil {
-		return nil, err
-	}
-	return &StringLiteral{Value: val}, nil
-}
+String <- '"' StringValue '"' { return parseString(c) }
 
 StringValue <- ( !EscapedChar . / '\\' EscapeSequence )*
 
@@ -180,24 +60,8 @@ HexDigit ← [0-9a-f]i
 
 CmpOp <- ( ">=" / ">" / "<=" / "<" / "!:" / "!=" / ":" / "=" )
 
-OneOfExpr <- '[' _ values:(OneOfValues)? _ ']' {
-	if values == nil || len(values.([]Expr)) == 0 {
-		return &OneOfExpr{Values: nil}, nil
-	}
+OneOfExpr <- '[' _ values:(OneOfValues)? _ ']' { return parseOneOfExpression(values) }
 
-	return &OneOfExpr{Values: values.([]Expr)}, nil
-}
-
-OneOfValues <- head:OneOfValue tail:(_ ',' _ OneOfValue)* {
-	vals := []Expr{resolveOneOfValueType(head)}
-
-	for _, t := range tail.([]any) {
-		// t is an array where index 3 holds the next Value.
-		val := resolveOneOfValueType(t.([]any)[3])
-		vals = append(vals, val)
-	}
-
-	return vals, nil
-}
+OneOfValues <- head:OneOfValue tail:(_ ',' _ OneOfValue)* { return parseOneOfValues(head, tail) }
 
 _ <- [ \t\r\n]*
