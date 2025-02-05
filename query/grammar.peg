@@ -1,67 +1,35 @@
 {
-	package query
-
-	import (
-		"strconv"
-	)
-
+    package query
 }
 
-Expr <- _ e:OrExpr _ { return e, nil }
-
-OrExpr <- left:AndExpr rest:(_ ( OrOp ) _ AndExpr)* { return parseBooleanExpression(left, rest) }
-
-OrOp <- ("OR" / "or")
-
-AndExpr <- left:NotExpr rest:(_ ( op:AndOp ) _ NotExpr)* { return parseBooleanExpression(left, rest) }
-
-AndOp <- ("AND" / "and")
-
-NotExpr <- ("NOT" / "not") _ expr:Primary { return &NotExpr{Expr: expr.(Expr)}, nil }
-		/ Primary
-
-Primary <- ParenExpr / FieldExpr / Term
-
-ParenExpr <- '(' _ expr:Expr _ ')' { return expr.(Expr), nil }
-
-FieldExpr <- field:Identifier _ op:CmpOp _ value:Value { return parseFieldExpression(field, op, value) }
-
-Term <- term:Identifier { return &StringLiteral{Value: string(term.(Identifier))}, nil }
-      / term:String     { return term, nil }
-
-Value <- OneOfExpr / String / Number / Identifier
-OneOfValue <- String / Number / Identifier
-
-Identifier <- AlphaNumeric ("." AlphaNumeric)* { return Identifier(c.text), nil }
-
-AlphaNumeric <- [a-zA-Z_][a-zA-Z0-9_]*
-
-Integer <- '0' / NonZeroDecimalDigit DecimalDigit+
-
-Number <- '-'? Integer ( '.' DecimalDigit+ )? { return parseNumber(c) } 
-
-DecimalDigit <- [0-9]
-
+Expr                <- _ e:OrExpr _                                          { return e, nil }
+OrExpr              <- left:AndExpr rest:(_ ( OrOp ) _ AndExpr)*             { return parseBooleanExpression(left, rest) }
+OrOp                <- ("OR" / "or")
+AndExpr             <- left:NotExpr rest:(_ ( op:AndOp ) _ NotExpr)*         { return parseBooleanExpression(left, rest) }
+AndOp               <- ("AND" / "and")
+NotExpr             <- ("NOT" / "not") _ expr:Primary                        { return &NotExpr{Expr: expr.(Expr)}, nil }
+                     / Primary
+Primary             <- ParenExpr / FieldExpr / Term
+ParenExpr           <- '(' _ expr:Expr _ ')'                                 { return expr.(Expr), nil }
+FieldExpr           <- field:Identifier _ op:CmpOp _ value:Value             { return parseFieldExpression(field, op, value) }
+Term                <- term:Identifier                                       { return &StringLiteral{Value: string(term.(Identifier))}, nil }
+                     / term:String                                           { return term, nil }
+Value               <- OneOfExpr / String / Number / Identifier
+OneOfValue          <- String / Number / Identifier
+Identifier          <- AlphaNumeric ("." AlphaNumeric)*                      { return Identifier(c.text), nil }
+AlphaNumeric        <- [a-zA-Z_][a-zA-Z0-9_]*
+Integer             <- '0' / NonZeroDecimalDigit DecimalDigit+
+Number              <- '-'? Integer ( '.' DecimalDigit+ )?                   { return parseNumber(c) }
+DecimalDigit        <- [0-9]
 NonZeroDecimalDigit <- [1-9]
-
-String <- '"' StringValue '"' { return parseString(c) }
-
-StringValue <- ( !EscapedChar . / '\\' EscapeSequence )*
-
-EscapedChar <- [\x00-\x1f"\\]
-
-EscapeSequence <- SingleCharEscape / UnicodeEscape
-
-SingleCharEscape <- ["\\/bfnrt]
-
-UnicodeEscape <- 'u' HexDigit HexDigit HexDigit HexDigit
-
-HexDigit ← [0-9a-f]i
-
-CmpOp <- ( ">=" / ">" / "<=" / "<" / "!:" / "!=" / ":" / "=" )
-
-OneOfExpr <- '[' _ values:(OneOfValues)? _ ']' { return parseOneOfExpression(values) }
-
-OneOfValues <- head:OneOfValue tail:(_ ',' _ OneOfValue)* { return parseOneOfValues(head, tail) }
-
-_ <- [ \t\r\n]*
+String              <- '"' StringValue '"'                                   { return parseString(c) }
+StringValue         <- ( !EscapedChar . / '\\' EscapeSequence )*
+EscapedChar         <- [\x00-\x1f"\\]
+EscapeSequence      <- SingleCharEscape / UnicodeEscape
+SingleCharEscape    <- ["\\/bfnrt]
+UnicodeEscape       <- 'u' HexDigit HexDigit HexDigit HexDigit
+HexDigit            <- [0-9a-f]i
+CmpOp               <- ( ">=" / ">" / "<=" / "<" / "!:" / "!=" / ":" / "=" )
+OneOfExpr           <- '[' _ values:(OneOfValues)? _ ']'                     { return parseOneOfExpression(values) }
+OneOfValues         <- head:OneOfValue tail:(_ ',' _ OneOfValue)*            { return parseOneOfValues(head, tail) }
+_                   <- [ \t\r\n]*
