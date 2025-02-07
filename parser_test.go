@@ -57,16 +57,6 @@ func TestParser(t *testing.T) {
 			input: "status:200 and eps!=0.003",
 			want:  "(and (= status 200) (!= eps 0.003000))",
 		},
-		// Using the NOT operator.
-		{
-			input: "not error",
-			want:  `(not "error")`,
-		},
-		// Bare term.
-		{
-			input: "error",
-			want:  `"error"`,
-		},
 		// Nested parentheses.
 		{
 			input: "((status:200))",

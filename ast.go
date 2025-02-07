@@ -3,6 +3,8 @@ package dumbql
 import (
 	"fmt"
 	"strconv"
+
+	sq "github.com/Masterminds/squirrel"
 )
 
 //go:generate pigeon -o parser.gen.go grammar.peg
@@ -10,6 +12,11 @@ import (
 // Expr is the interface for all expressions.
 type Expr interface {
 	fmt.Stringer
+	sq.Sqlizer
+}
+
+type Valuer interface {
+	Value() any
 }
 
 // BinaryExpr represents a binary operation (AND, OR) between two expressions.
@@ -36,7 +43,7 @@ func (n *NotExpr) String() string {
 type FieldExpr struct {
 	Field Identifier
 	Op    FieldOperator
-	Value Expr
+	Value Valuer
 }
 
 func (f *FieldExpr) String() string {
@@ -45,28 +52,25 @@ func (f *FieldExpr) String() string {
 
 // StringLiteral represents a bare term (a free text search term).
 type StringLiteral struct {
-	Value string
+	StringValue string
 }
 
-func (t *StringLiteral) String() string {
-	return strconv.Quote(t.Value)
-}
+func (t *StringLiteral) String() string { return strconv.Quote(t.StringValue) }
+func (t *StringLiteral) Value() any     { return t.StringValue }
 
 type NumberLiteral struct {
-	Value float64
+	NumberValue float64
 }
 
-func (n *NumberLiteral) String() string {
-	return fmt.Sprintf("%f", n.Value)
-}
+func (n *NumberLiteral) String() string { return fmt.Sprintf("%f", n.NumberValue) }
+func (n *NumberLiteral) Value() any     { return n.NumberValue }
 
 type IntegerLiteral struct {
-	Value int64
+	IntegerValue int64
 }
 
-func (i *IntegerLiteral) String() string {
-	return fmt.Sprintf("%d", i.Value)
-}
+func (i *IntegerLiteral) String() string { return fmt.Sprintf("%d", i.IntegerValue) }
+func (i *IntegerLiteral) Value() any     { return i.IntegerValue }
 
 type Identifier string
 
@@ -75,11 +79,19 @@ func (i Identifier) String() string {
 }
 
 type OneOfExpr struct {
-	Values []Expr
+	Values []Valuer
 }
 
-func (o *OneOfExpr) String() string {
-	return fmt.Sprintf("%v", o.Values)
+func (o *OneOfExpr) String() string { return fmt.Sprintf("%v", o.Values) }
+
+func (o *OneOfExpr) Value() any {
+	vals := make([]any, 0, len(o.Values))
+
+	for _, v := range o.Values {
+		vals = append(vals, v.Value())
+	}
+
+	return vals
 }
 
 type BooleanOperator uint8

@@ -9,11 +9,9 @@ AndExpr             <- left:NotExpr rest:(_ ( op:AndOp ) _ NotExpr)*         { r
 AndOp               <- ("AND" / "and")
 NotExpr             <- ("NOT" / "not") _ expr:Primary                        { return &NotExpr{Expr: expr.(Expr)}, nil }
                      / Primary
-Primary             <- ParenExpr / FieldExpr / Term
+Primary             <- ParenExpr / FieldExpr 
 ParenExpr           <- '(' _ expr:Expr _ ')'                                 { return expr.(Expr), nil }
 FieldExpr           <- field:Identifier _ op:CmpOp _ value:Value             { return parseFieldExpression(field, op, value) }
-Term                <- term:Identifier                                       { return &StringLiteral{Value: string(term.(Identifier))}, nil }
-                     / term:String                                           { return term, nil }
 Value               <- OneOfExpr / String / Number / Identifier
 OneOfValue          <- String / Number / Identifier
 Identifier          <- AlphaNumeric ("." AlphaNumeric)*                      { return Identifier(c.text), nil }

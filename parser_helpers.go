@@ -35,14 +35,14 @@ func resolveFieldOperator(op any) (FieldOperator, error) {
 	}
 }
 
-func resolveOneOfValueType(val any) Expr {
+func resolveOneOfValueType(val any) Valuer {
 	switch v := val.(type) {
 	case Identifier:
-		return &StringLiteral{Value: string(v)}
+		return &StringLiteral{StringValue: string(v)}
 	case string:
-		return &StringLiteral{Value: v}
+		return &StringLiteral{StringValue: v}
 	default:
-		return v.(Expr)
+		return v.(Valuer)
 	}
 }
 
@@ -75,11 +75,11 @@ func parseFieldExpression(field, op, value any) (any, error) {
 	var val any
 	switch v := value.(type) {
 	case []byte:
-		val = &StringLiteral{Value: string(v)}
+		val = &StringLiteral{StringValue: string(v)}
 	case string:
-		val = &StringLiteral{Value: v}
+		val = &StringLiteral{StringValue: v}
 	case Identifier:
-		val = &StringLiteral{Value: string(v)}
+		val = &StringLiteral{StringValue: string(v)}
 	default:
 		val = value
 	}
@@ -87,20 +87,24 @@ func parseFieldExpression(field, op, value any) (any, error) {
 	return &FieldExpr{
 		Field: field.(Identifier),
 		Op:    opR,
-		Value: val.(Expr),
+		Value: val.(Valuer),
 	}, nil
 }
 
 func parseNumber(c *current) (any, error) {
 	if val, err := strconv.Atoi(string(c.text)); err == nil {
-		return &IntegerLiteral{Value: int64(val)}, nil
+		return &IntegerLiteral{IntegerValue: int64(val)}, nil
 	}
 
 	if val, err := strconv.ParseFloat(string(c.text), 64); err == nil {
-		return &NumberLiteral{Value: val}, nil
+		return &NumberLiteral{NumberValue: val}, nil
 	}
 
 	return nil, fmt.Errorf("invalid number literal: %q", string(c.text))
+}
+
+func parseTermIdentifier(term any) (any, error) {
+	return &StringLiteral{StringValue: string(term.(Identifier))}, nil
 }
 
 func parseString(c *current) (any, error) {
@@ -108,19 +112,19 @@ func parseString(c *current) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &StringLiteral{Value: val}, nil
+	return &StringLiteral{StringValue: val}, nil
 }
 
 func parseOneOfExpression(values any) (any, error) {
-	if values == nil || len(values.([]Expr)) == 0 {
+	if values == nil || len(values.([]Valuer)) == 0 {
 		return &OneOfExpr{Values: nil}, nil
 	}
 
-	return &OneOfExpr{Values: values.([]Expr)}, nil
+	return &OneOfExpr{Values: values.([]Valuer)}, nil
 }
 
 func parseOneOfValues(head, tail any) (any, error) {
-	vals := []Expr{resolveOneOfValueType(head)}
+	vals := []Valuer{resolveOneOfValueType(head)}
 
 	for _, t := range tail.([]any) {
 		// t is an array where index 3 holds the next Value.
