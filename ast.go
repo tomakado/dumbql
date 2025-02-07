@@ -1,4 +1,4 @@
-package query
+package dumbql
 
 import (
 	"fmt"
