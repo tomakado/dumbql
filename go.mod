@@ -5,6 +5,7 @@ go 1.23.4
 require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/stretchr/testify v1.10.0
+	go.uber.org/multierr v1.11.0
 )
 
 require (

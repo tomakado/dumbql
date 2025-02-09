@@ -1,4 +1,4 @@
-package dumbql
+package query
 
 import (
 	"fmt"
@@ -17,8 +17,8 @@ func (b *BinaryExpr) ToSql() (string, []any, error) {
 	return "", nil, fmt.Errorf("unknown operator %q", b.Op)
 }
 
-func (b *NotExpr) ToSql() (string, []any, error) {
-	sql, args, err := b.Expr.ToSql()
+func (n *NotExpr) ToSql() (string, []any, error) {
+	sql, args, err := n.Expr.ToSql()
 	if err != nil {
 		return "", nil, err
 	}

@@ -1,4 +1,4 @@
-package dumbql
+package query
 
 import (
 	"fmt"
@@ -101,10 +101,6 @@ func parseNumber(c *current) (any, error) {
 	}
 
 	return nil, fmt.Errorf("invalid number literal: %q", string(c.text))
-}
-
-func parseTermIdentifier(term any) (any, error) {
-	return &StringLiteral{StringValue: string(term.(Identifier))}, nil
 }
 
 func parseString(c *current) (any, error) {

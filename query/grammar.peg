@@ -1,5 +1,5 @@
 {
-    package dumbql
+    package query
 }
 
 Expr                <- _ e:OrExpr _                                          { return e, nil }

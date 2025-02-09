@@ -1,18 +1,21 @@
-package dumbql
+package query
 
 import (
 	"fmt"
 	"strconv"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/defer-panic/dumbql/query/schema"
 )
 
-//go:generate pigeon -o parser.gen.go grammar.peg
+//go:generate go run github.com/mna/pigeon@v1.3.0 -optimize-grammar -optimize-parser -o parser.gen.go grammar.peg
 
 // Expr is the interface for all expressions.
 type Expr interface {
 	fmt.Stringer
 	sq.Sqlizer
+
+	Validate(schema.Schema) (Expr, error)
 }
 
 type Valuer interface {
@@ -74,9 +77,8 @@ func (i *IntegerLiteral) Value() any     { return i.IntegerValue }
 
 type Identifier string
 
-func (i Identifier) String() string {
-	return string(i)
-}
+func (i Identifier) Value() any     { return string(i) }
+func (i Identifier) String() string { return string(i) }
 
 type OneOfExpr struct {
 	Values []Valuer

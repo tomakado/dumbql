@@ -1,9 +1,9 @@
-package dumbql_test
+package query_test
 
 import (
 	"testing"
 
-	"github.com/defer-panic/dumbql"
+	"github.com/defer-panic/dumbql/query"
 	"github.com/stretchr/testify/require"
 )
 
@@ -101,10 +101,10 @@ func TestParser(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
-			ast, err := dumbql.Parse("input", []byte(test.input))
+			ast, err := query.Parse("input", []byte(test.input))
 			require.NoError(t, err, "parsing error for input: %s", test.input)
 
-			require.Equal(t, test.want, ast.(dumbql.Expr).String())
+			require.Equal(t, test.want, ast.(query.Expr).String())
 		})
 	}
 }

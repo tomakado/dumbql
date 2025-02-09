@@ -1,9 +1,9 @@
-package dumbql_test
+package query_test
 
 import (
 	"testing"
 
-	"github.com/defer-panic/dumbql"
+	"github.com/defer-panic/dumbql/query"
 	"github.com/stretchr/testify/require"
 
 	sq "github.com/Masterminds/squirrel"
@@ -85,11 +85,11 @@ func TestToSql(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
-			ast, err := dumbql.Parse("test", []byte(test.input))
+			ast, err := query.Parse("test", []byte(test.input))
 			require.NoError(t, err)
 			require.NotNil(t, ast)
 
-			expr, ok := ast.(dumbql.Expr)
+			expr, ok := ast.(query.Expr)
 			require.True(t, ok)
 
 			got, gotArgs, err := sq.Select("*").From("dummy_table").Where(expr).ToSql()
