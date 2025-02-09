@@ -80,5 +80,4 @@ func (f *FieldExpr) Validate(schm schema.Schema) (Expr, error) {
 		Op:    f.Op,
 		Value: &OneOfExpr{Values: values},
 	}, err
-
 }

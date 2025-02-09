@@ -71,7 +71,7 @@ type IntegerLiteral struct {
 	IntegerValue int64
 }
 
-func (i *IntegerLiteral) String() string { return fmt.Sprintf("%d", i.IntegerValue) }
+func (i *IntegerLiteral) String() string { return strconv.FormatInt(i.IntegerValue, 10) }
 func (i *IntegerLiteral) Value() any     { return i.IntegerValue }
 
 type Identifier string

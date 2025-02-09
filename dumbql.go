@@ -46,7 +46,8 @@
 //
 // # Field expression
 //
-// Field name & value pair divided by operator. Field name is any alphanumeric identifier (with underscore), value can be string, int64 or floa64.
+// Field name & value pair divided by operator. Field name is any alphanumeric identifier (with underscore),
+// value can be string, int64 or floa64.
 // One-of expression is also supported (see below).
 //
 //	<field_name> <operator> <value>
@@ -85,7 +86,8 @@
 //
 // # Strings
 //
-// String is a sequence on Unicode characters surrounded by double quotes (`"`). In some cases like single word it's possible to write string value without double quotes.
+// String is a sequence on Unicode characters surrounded by double quotes (`"`). In some cases like single word
+// it's possible to write string value without double quotes.
 //
 //status:pending and period_months < 4 and (title:"hello world" or name:"John Doe")
 package dumbql
@@ -109,13 +111,14 @@ func Parse(q string, opts ...query.Option) (*Query, error) {
 	return &Query{res.(query.Expr)}, nil
 }
 
-// Validate checks the query against the provided schema, returning a validated expression or an error if any rule is violated.
-// Even when error returned Validate can return query AST with invalided nodes dropped.
+// Validate checks the query against the provided schema, returning a validated expression or an error
+// if any rule is violated. Even when error returned Validate can return query AST with invalided nodes dropped.
 func (q *Query) Validate(s schema.Schema) (query.Expr, error) {
 	return q.Expr.Validate(s)
 }
 
-// ToSql converts the Query into an SQL string, returning the SQL string, arguments slice, and any potential error encountered.
-func (q *Query) ToSql() (string, []any, error) {
+// ToSql converts the Query into an SQL string, returning the SQL string, arguments slice,
+// and any potential error encountered.
+func (q *Query) ToSql() (string, []any, error) { //nolint:revive
 	return q.Expr.ToSql()
 }

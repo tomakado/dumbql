@@ -9,7 +9,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 )
 
-func TestToSql(t *testing.T) {
+func TestToSql(t *testing.T) { //nolint:funlen
 	tests := []struct {
 		input    string
 		want     string

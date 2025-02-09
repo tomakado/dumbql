@@ -6,7 +6,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 )
 
-func (b *BinaryExpr) ToSql() (string, []any, error) {
+func (b *BinaryExpr) ToSql() (string, []any, error) { //nolint:revive
 	switch b.Op {
 	case And:
 		return sq.And{b.Left, b.Right}.ToSql()
@@ -17,7 +17,7 @@ func (b *BinaryExpr) ToSql() (string, []any, error) {
 	return "", nil, fmt.Errorf("unknown operator %q", b.Op)
 }
 
-func (n *NotExpr) ToSql() (string, []any, error) {
+func (n *NotExpr) ToSql() (string, []any, error) { //nolint:revive
 	sql, args, err := n.Expr.ToSql()
 	if err != nil {
 		return "", nil, err
@@ -26,7 +26,7 @@ func (n *NotExpr) ToSql() (string, []any, error) {
 	return sq.Expr("NOT "+sql, args...).ToSql()
 }
 
-func (f *FieldExpr) ToSql() (string, []any, error) {
+func (f *FieldExpr) ToSql() (string, []any, error) { //nolint:revive
 	field, value := f.Field.String(), f.Value.Value()
 
 	var sqlizer sq.Sqlizer

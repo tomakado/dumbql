@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestParser(t *testing.T) {
+func TestParser(t *testing.T) { //nolint:funlen
 	tests := []struct {
 		input string
 		want  string

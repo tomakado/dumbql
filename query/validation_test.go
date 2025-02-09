@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestBinaryExpr_Validate(t *testing.T) {
+func TestBinaryExpr_Validate(t *testing.T) { //nolint:funlen
 	t.Run("positive", func(t *testing.T) {
 		schm := schema.Schema{
 			"left":  schema.Any(),
@@ -166,7 +166,7 @@ func TestBinaryExpr_Validate(t *testing.T) {
 	})
 }
 
-func TestNotExpr_Validate(t *testing.T) {
+func TestNotExpr_Validate(t *testing.T) { //nolint:funlen
 	t.Run("positive", func(t *testing.T) {
 		schm := schema.Schema{
 			"field": schema.Any(),
@@ -232,7 +232,7 @@ func TestNotExpr_Validate(t *testing.T) {
 	})
 }
 
-func TestFieldExpr_Validate(t *testing.T) {
+func TestFieldExpr_Validate(t *testing.T) { //nolint:funlen
 	t.Run("positive", func(t *testing.T) {
 		t.Run("primitive value", func(t *testing.T) {
 			schm := schema.Schema{

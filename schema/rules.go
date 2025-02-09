@@ -25,7 +25,7 @@ func All(rules ...RuleFunc) RuleFunc {
 	}
 }
 
-func InRange[T Numeric](min, max T) RuleFunc {
+func InRange[T Numeric](min, max T) RuleFunc { //nolint:revive
 	return func(field Field, value any) error {
 		if v, ok := value.(T); ok {
 			if v < min || v > max {
@@ -37,7 +37,7 @@ func InRange[T Numeric](min, max T) RuleFunc {
 	}
 }
 
-func Min[T Numeric](min T) RuleFunc {
+func Min[T Numeric](min T) RuleFunc { //nolint:revive
 	return func(field Field, value any) error {
 		if v, ok := value.(T); ok {
 			if v < min {
@@ -49,7 +49,7 @@ func Min[T Numeric](min T) RuleFunc {
 	}
 }
 
-func Max[T Numeric](max T) RuleFunc {
+func Max[T Numeric](max T) RuleFunc { //nolint:revive
 	return func(field Field, value any) error {
 		if v, ok := value.(T); ok {
 			if v > max {
@@ -61,7 +61,7 @@ func Max[T Numeric](max T) RuleFunc {
 	}
 }
 
-func LenInRange(min, max int) RuleFunc {
+func LenInRange(min, max int) RuleFunc { //nolint:revive
 	return func(field Field, value any) error {
 		if v, ok := value.(string); ok {
 			if len(v) < min || len(v) > max {
@@ -73,7 +73,7 @@ func LenInRange(min, max int) RuleFunc {
 	}
 }
 
-func MinLen(min int) RuleFunc {
+func MinLen(min int) RuleFunc { //nolint:revive
 	return func(field Field, value any) error {
 		if v, ok := value.(string); ok {
 			if len(v) < min {
@@ -85,7 +85,7 @@ func MinLen(min int) RuleFunc {
 	}
 }
 
-func MaxLen(max int) RuleFunc {
+func MaxLen(max int) RuleFunc { //nolint:revive
 	return func(field Field, value any) error {
 		if v, ok := value.(string); ok {
 			if len(v) > max {

@@ -1,0 +1,38 @@
+run:
+  timeout: 2m
+
+linters:
+  enable:
+    - cyclop
+    - decorder
+    - dupl
+    - exhaustive
+    - fatcontext
+    - funlen
+    - gocognit
+    - gocritic
+    - gocyclo
+    - gofumpt
+    - gosec
+    - grouper
+    - iface
+    - interfacebloat
+    - lll
+    - makezero
+    - misspell
+    - mnd
+    - nestif
+    - nilnil
+    - nonamedreturns
+    - perfsprint
+    - prealloc
+    - reassign
+    - recvcheck
+    - revive
+    - testpackage
+    - tparallel
+    - unconvert
+    - unparam
+    - usestdlibvars
+    - wastedassign
+    - whitespace

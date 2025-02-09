@@ -51,7 +51,7 @@ func parseBooleanExpression(left, rest any) (any, error) {
 	for _, r := range rest.([]any) {
 		parts := r.([]any)
 		// parts[1] holds the operator token, parts[3] holds the next AndExpr.
-		//op := string(parts[1].([]byte))
+		// op := string(parts[1].([]byte))
 		op, err := resolveBooleanOperator(parts[1])
 		if err != nil {
 			return nil, err
