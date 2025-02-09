@@ -3,7 +3,7 @@ package query
 import (
 	"fmt"
 
-	"github.com/defer-panic/dumbql/query/schema"
+	"github.com/defer-panic/dumbql/schema"
 	"go.uber.org/multierr"
 )
 

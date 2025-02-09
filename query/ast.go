@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/defer-panic/dumbql/query/schema"
+	"github.com/defer-panic/dumbql/schema"
 )
 
 //go:generate go run github.com/mna/pigeon@v1.3.0 -optimize-grammar -optimize-parser -o parser.gen.go grammar.peg

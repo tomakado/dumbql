@@ -1,17 +1,16 @@
-package query_test
+package dumbql_test
 
 import (
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/defer-panic/dumbql/query"
-	"github.com/defer-panic/dumbql/query/schema"
+	"github.com/defer-panic/dumbql"
+	"github.com/defer-panic/dumbql/schema"
 )
 
 func ExampleParse() {
 	const q = `profile.age >= 18 and profile.city = Barcelona`
-
-	ast, err := query.Parse("example", []byte(q))
+	ast, err := dumbql.Parse(q)
 	if err != nil {
 		panic(err)
 	}
@@ -36,13 +35,7 @@ func ExampleSchema() {
 	//
 	// Invalid parts of the query are dropped.
 	const q = `status:pending and period_months:4 and (title:"hello world" or name:"John Doe")`
-
-	ast, err := query.Parse("example", []byte(q))
-	if err != nil {
-		panic(err)
-	}
-
-	expr, err := query.AsQuery(ast)
+	expr, err := dumbql.Parse(q)
 	if err != nil {
 		panic(err)
 	}
@@ -56,13 +49,7 @@ func ExampleSchema() {
 
 func ExampleSQL() {
 	const q = `status:pending and period_months < 4 and (title:"hello world" or name:"John Doe")`
-
-	ast, err := query.Parse("example", []byte(q))
-	if err != nil {
-		panic(err)
-	}
-
-	expr, err := query.AsQuery(ast)
+	expr, err := dumbql.Parse(q)
 	if err != nil {
 		panic(err)
 	}
