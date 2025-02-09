@@ -15,7 +15,9 @@ func (b *BinaryExpr) Validate(schema schema.Schema) (Expr, error) {
 	right, rightErr := b.Right.Validate(schema)
 	if rightErr != nil {
 		err = multierr.Append(err, rightErr)
-		return left, err
+		if right == nil {
+			return left, err
+		}
 	}
 
 	if left == nil {

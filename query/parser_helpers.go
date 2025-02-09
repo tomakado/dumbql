@@ -5,6 +5,14 @@ import (
 	"strconv"
 )
 
+func AsQuery(v any) (Expr, error) {
+	expr, ok := v.(Expr)
+	if !ok {
+		return nil, fmt.Errorf("%T is not query.Expr", v)
+	}
+	return expr, nil
+}
+
 func resolveBooleanOperator(op any) (BooleanOperator, error) {
 	switch string(op.([]byte)) {
 	case "AND", "and":

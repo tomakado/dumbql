@@ -610,7 +610,7 @@ var g = &grammar{
 																														ignoreCase: false,
 																														inverted:   false,
 																													},
-																													&oneOrMoreExpr{
+																													&zeroOrMoreExpr{
 																														pos: position{line: 19, col: 50, offset: 1193},
 																														expr: &charClassMatcher{
 																															pos:        position{line: 21, col: 24, offset: 1333},
@@ -896,7 +896,7 @@ var g = &grammar{
 																																	ignoreCase: false,
 																																	inverted:   false,
 																																},
-																																&oneOrMoreExpr{
+																																&zeroOrMoreExpr{
 																																	pos: position{line: 19, col: 50, offset: 1193},
 																																	expr: &charClassMatcher{
 																																		pos:        position{line: 21, col: 24, offset: 1333},
@@ -1172,7 +1172,7 @@ var g = &grammar{
 																			ignoreCase: false,
 																			inverted:   false,
 																		},
-																		&oneOrMoreExpr{
+																		&zeroOrMoreExpr{
 																			pos: position{line: 19, col: 50, offset: 1193},
 																			expr: &charClassMatcher{
 																				pos:        position{line: 21, col: 24, offset: 1333},
