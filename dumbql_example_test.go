@@ -19,7 +19,7 @@ func ExampleParse() {
 	// Output: (and (>= profile.age 18) (= profile.city "Barcelona"))
 }
 
-func ExampleSchema() {
+func ExampleQuery_Validate() {
 	schm := schema.Schema{
 		"status": schema.All(
 			schema.Is[string](),
@@ -42,24 +42,22 @@ func ExampleSchema() {
 
 	validated, err := expr.Validate(schm)
 	fmt.Println(validated)
-	fmt.Printf("validation error: %v\n", err)
+	fmt.Println(err)
 	// Output: (and (= status "pending") (= title "hello world"))
-	// validation error: field "period_months": value must be equal or less than 3, got 4; field "name" not found in schema
+	// field "period_months": value must be equal or less than 3, got 4; field "name" not found in schema
 }
 
-func ExampleSQL() {
+func ExampleQuery_ToSql() {
 	const q = `status:pending and period_months < 4 and (title:"hello world" or name:"John Doe")`
 	expr, err := dumbql.Parse(q)
 	if err != nil {
 		panic(err)
 	}
 
-	where, args, err := expr.ToSql()
-	if err != nil {
-		panic(err)
-	}
-
-	sql, args, err := sq.Select("*").From("users").Where(where, args...).ToSql()
+	sql, args, err := sq.Select("*").
+		From("users").
+		Where(expr).
+		ToSql()
 	if err != nil {
 		panic(err)
 	}

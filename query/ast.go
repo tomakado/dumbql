@@ -10,7 +10,6 @@ import (
 
 //go:generate go run github.com/mna/pigeon@v1.3.0 -optimize-grammar -optimize-parser -o parser.gen.go grammar.peg
 
-// Expr is the interface for all expressions.
 type Expr interface {
 	fmt.Stringer
 	sq.Sqlizer
@@ -22,10 +21,10 @@ type Valuer interface {
 	Value() any
 }
 
-// BinaryExpr represents a binary operation (AND, OR) between two expressions.
+// BinaryExpr represents a binary operation (`and`, `or`, `AND`, `OR`) between two expressions.
 type BinaryExpr struct {
 	Left  Expr
-	Op    BooleanOperator // "AND" or "OR"
+	Op    BooleanOperator // `and` or `or`
 	Right Expr
 }
 
