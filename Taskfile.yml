@@ -30,10 +30,12 @@ tasks:
   # Test
   test:
     desc: "Run unit tests"
-    cmd:  go test ./...
+    cmds:
+      - go test ./... -coverprofile=coverage.out
+      - cat coverage.out | grep -v "query/parser.gen.go" > coverage_filtered.out
+      - go tool cover -func=coverage_filtered.out
 
   # Codegen
   generate:
     desc: "Run code generators"
-    cmds:
-      - go generate ./...
+    cmd: go generate ./...
