@@ -122,6 +122,7 @@ const (
 	GreaterThanOrEqual
 	LessThan
 	LessThanOrEqual
+	Like
 )
 
 func (c FieldOperator) String() string {
@@ -138,6 +139,8 @@ func (c FieldOperator) String() string {
 		return "<"
 	case LessThanOrEqual:
 		return "<="
+	case Like:
+		return "~"
 	default:
 		return "unknown!"
 	}

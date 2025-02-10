@@ -30,6 +30,8 @@ func resolveFieldOperator(op any) (FieldOperator, error) {
 		return NotEqual, nil
 	case ":", "=":
 		return Equal, nil
+	case "~":
+		return Like, nil
 	default:
 		return 0, fmt.Errorf("unknown compare operator %q", op)
 	}

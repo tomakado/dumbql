@@ -81,6 +81,13 @@ func TestToSql(t *testing.T) { //nolint:funlen
 			want:     "SELECT * FROM dummy_table WHERE NOT (status = ? AND eps < ?)",
 			wantArgs: []any{int64(200), 0.003},
 		},
+		{
+			input: `name~"John"`,
+			want:  "SELECT * FROM dummy_table WHERE name LIKE ?",
+			wantArgs: []any{
+				"John",
+			},
+		},
 	}
 
 	for _, test := range tests {

@@ -155,11 +155,12 @@ period_months < 4
 
 ### Field expression operators
 
-| Operator             | Meaning       | Supported types              |
-|----------------------|---------------|------------------------------|
-| `:` or `=`           | Equal, one of | `int64`, `float64`, `string` |
-| `!=` or `!:`         | Not equal     | `int64`, `float64`, `string` |
-| `>`, `>=`, `<`, `<=` | Comparison    | `int64`, `float64`           |
+| Operator             | Meaning                       | Supported types              |
+|----------------------|-------------------------------|------------------------------|
+| `:` or `=`           | Equal, one of                 | `int64`, `float64`, `string` |
+| `!=` or `!:`         | Not equal                     | `int64`, `float64`, `string` |
+| `~`                  | “Like” or “contains” operator | `string`                     |
+| `>`, `>=`, `<`, `<=` | Comparison                    | `int64`, `float64`           |
 
 
 ### Boolean operators

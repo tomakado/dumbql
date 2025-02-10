@@ -39,7 +39,7 @@
 //	SingleCharEscape    <- ["\\/bfnrt]
 //	UnicodeEscape       <- 'u' HexDigit HexDigit HexDigit HexDigit
 //	HexDigit            <- [0-9a-f]i
-//	CmpOp               <- ( ">=" / ">" / "<=" / "<" / "!:" / "!=" / ":" / "=" )
+//	CmpOp               <- ( ">=" / ">" / "<=" / "<" / "!:" / "!=" / ":" / "=" / "~" )
 //	OneOfExpr           <- '[' _ values:(OneOfValues)? _ ']'
 //	OneOfValues         <- head:OneOfValue tail:(_ ',' _ OneOfValue)*
 //	_                   <- [ \t\r\n]*
@@ -58,11 +58,12 @@
 //
 // # Field expression operators
 //
-//	| Operator             | Meaning       | Supported types              |
-//	|----------------------|---------------|------------------------------|
-//	| `:` or `=`           | Equal, one of | `int64`, `float64`, `string` |
-//	| `!=` or `!:`         | Not equal     | `int64`, `float64`, `string` |
-//	| `>`, `>=`, `<`, `<=` | Comparison    | `int64`, `float64`           |
+//	| Operator             | Meaning                       | Supported types              |
+//	|----------------------|-------------------------------|------------------------------|
+//	| `:` or `=`           | Equal, one of                 | `int64`, `float64`, `string` |
+//	| `!=` or `!:`         | Not equal                     | `int64`, `float64`, `string` |
+//	| `~`                  | “Like” or “contains” operator | `string`                     |
+//	| `>`, `>=`, `<`, `<=` | Comparison                    | `int64`, `float64`           |
 //
 // # Boolean operators
 //

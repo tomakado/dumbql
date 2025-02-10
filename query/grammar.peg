@@ -27,7 +27,7 @@ EscapeSequence      <- SingleCharEscape / UnicodeEscape
 SingleCharEscape    <- ["\\/bfnrt]
 UnicodeEscape       <- 'u' HexDigit HexDigit HexDigit HexDigit
 HexDigit            <- [0-9a-f]i
-CmpOp               <- ( ">=" / ">" / "<=" / "<" / "!:" / "!=" / ":" / "=" )
+CmpOp               <- ( ">=" / ">" / "<=" / "<" / "!:" / "!=" / ":" / "=" / "~" )
 OneOfExpr           <- '[' _ values:(OneOfValues)? _ ']'                     { return parseOneOfExpression(values) }
 OneOfValues         <- head:OneOfValue tail:(_ ',' _ OneOfValue)*            { return parseOneOfValues(head, tail) }
 _                   <- [ \t\r\n]*

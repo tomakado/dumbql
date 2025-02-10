@@ -44,6 +44,8 @@ func (f *FieldExpr) ToSql() (string, []any, error) { //nolint:revive
 		sqlizer = sq.Lt{field: value}
 	case LessThanOrEqual:
 		sqlizer = sq.LtOrEq{field: value}
+	case Like:
+		sqlizer = sq.Like{field: value}
 	default:
 		return "", nil, fmt.Errorf("unknown operator %q", f.Op)
 	}
