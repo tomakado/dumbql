@@ -1,26 +1,6 @@
-# dumbql
+# dumbql ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/defer-panic/dumbql) ![GitHub License](https://img.shields.io/github/license/defer-panic/dumbql) ![GitHub Tag](https://img.shields.io/github/v/tag/defer-panic/dumbql) [![Go Report Card](https://goreportcard.com/badge/github.com/defer-panic/dumbql)](https://goreportcard.com/report/github.com/defer-panic/dumbql) [![CI](https://github.com/defer-panic/dumbql/actions/workflows/main.yml/badge.svg)](https://github.com/defer-panic/dumbql/actions/workflows/main.yml) [![Coverage Status](https://coveralls.io/repos/github/defer-panic/dumbql/badge.svg?branch=main)](https://coveralls.io/github/defer-panic/dumbql?branch=main) [![Go Reference](https://pkg.go.dev/badge/github.com/defer-panic/dumbql.svg)](https://pkg.go.dev/github.com/defer-panic/dumbql)
 
 Simple (dumb) query language and parser for Go. 
-
-## Table of Contents
-
-<!-- TOC -->
-* [dumbql](#dumbql)
-  * [Table of Contents](#table-of-contents)
-  * [Features](#features)
-  * [Examples](#examples)
-    * [Simple parse](#simple-parse)
-    * [Validation against schema](#validation-against-schema)
-    * [Convert to SQL](#convert-to-sql)
-    * [Match against structs](#match-against-structs)
-  * [Query syntax](#query-syntax)
-    * [Field expression](#field-expression)
-    * [Field expression operators](#field-expression-operators)
-    * [Boolean operators](#boolean-operators)
-    * [“One of” expression](#one-of-expression)
-    * [Numbers](#numbers)
-    * [Strings](#strings)
-<!-- TOC -->
 
 ## Features
 
