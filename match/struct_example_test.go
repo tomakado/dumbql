@@ -3,8 +3,8 @@ package match_test
 import (
 	"fmt"
 
-	"github.com/defer-panic/dumbql/match"
-	"github.com/defer-panic/dumbql/query"
+	"go.tomakado.io/dumbql/match"
+	"go.tomakado.io/dumbql/query"
 )
 
 type User struct {

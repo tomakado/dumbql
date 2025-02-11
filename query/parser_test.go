@@ -3,8 +3,8 @@ package query_test
 import (
 	"testing"
 
-	"github.com/defer-panic/dumbql/query"
 	"github.com/stretchr/testify/require"
+	"go.tomakado.io/dumbql/query"
 )
 
 func TestParser(t *testing.T) { //nolint:funlen

@@ -5,10 +5,10 @@ import (
 	"math"
 	"testing"
 
-	"github.com/defer-panic/dumbql/query"
-	"github.com/defer-panic/dumbql/schema"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.tomakado.io/dumbql/query"
+	"go.tomakado.io/dumbql/schema"
 )
 
 func TestBinaryExpr_Validate(t *testing.T) { //nolint:funlen

@@ -5,9 +5,9 @@ import (
 	"math"
 	"testing"
 
-	"github.com/defer-panic/dumbql/schema"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.tomakado.io/dumbql/schema"
 )
 
 func TestAny(t *testing.T) {

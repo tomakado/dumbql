@@ -3,10 +3,10 @@ package query_test
 import (
 	"testing"
 
-	"github.com/defer-panic/dumbql/match"
-	"github.com/defer-panic/dumbql/query"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.tomakado.io/dumbql/match"
+	"go.tomakado.io/dumbql/query"
 )
 
 type person struct {

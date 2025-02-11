@@ -1,4 +1,4 @@
-module github.com/defer-panic/dumbql
+module go.tomakado.io/dumbql
 
 go 1.23.4
 

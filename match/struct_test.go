@@ -3,9 +3,9 @@ package match_test
 import (
 	"testing"
 
-	"github.com/defer-panic/dumbql/match"
-	"github.com/defer-panic/dumbql/query"
 	"github.com/stretchr/testify/assert"
+	"go.tomakado.io/dumbql/match"
+	"go.tomakado.io/dumbql/query"
 )
 
 type person struct {

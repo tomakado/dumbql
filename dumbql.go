@@ -2,8 +2,8 @@
 package dumbql
 
 import (
-	"github.com/defer-panic/dumbql/query"
-	"github.com/defer-panic/dumbql/schema"
+	"go.tomakado.io/dumbql/query"
+	"go.tomakado.io/dumbql/schema"
 )
 
 type Query struct {

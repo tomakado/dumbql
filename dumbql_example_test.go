@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/defer-panic/dumbql"
-	"github.com/defer-panic/dumbql/schema"
+	"go.tomakado.io/dumbql"
+	"go.tomakado.io/dumbql/schema"
 )
 
 func ExampleParse() {

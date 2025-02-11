@@ -3,7 +3,7 @@ package match
 import (
 	"reflect"
 
-	"github.com/defer-panic/dumbql/query"
+	"go.tomakado.io/dumbql/query"
 )
 
 // StructMatcher is a basic implementation of the Matcher interface for evaluating query expressions against structs.
