@@ -12,6 +12,7 @@ Simple (dumb) query language and parser for Go.
     * [Simple parse](#simple-parse)
     * [Validation against schema](#validation-against-schema)
     * [Convert to SQL](#convert-to-sql)
+    * [Match against structs](#match-against-structs)
   * [Query syntax](#query-syntax)
     * [Field expression](#field-expression)
     * [Field expression operators](#field-expression-operators)
@@ -28,6 +29,7 @@ Simple (dumb) query language and parser for Go.
 - One-of/In expressions (`occupation = [designer, "ux analyst"]`)
 - Schema validation
 - Drop-in usage with [squirrel](https://github.com/Masterminds/squirrel) query builder or SQL drivers directly
+- Struct matching with `dumbql` struct tag
 
 ## Examples
 
@@ -129,10 +131,89 @@ func main() {
   // SELECT * FROM users WHERE ((status = ? AND period_months < ?) AND (title = ? OR name = ?))
   // [pending 4 hello world John Doe]
 }
-
 ```
 
 See [dumbql_example_test.go](dumbql_example_test.go)
+
+### Match against structs
+
+```go
+package main
+
+import (
+  "fmt"
+
+  "github.com/defer-panic/dumbql"
+  "github.com/defer-panic/dumbql/match"
+  "github.com/defer-panic/dumbql/query"
+)
+
+type User struct {
+  ID       int64   `dumbql:"id"`
+  Name     string  `dumbql:"name"`
+  Age      int64   `dumbql:"age"`
+  Score    float64 `dumbql:"score"`
+  Location string  `dumbql:"location"`
+  Role     string  `dumbql:"role"`
+}
+
+func main() {
+  users := []User{
+    {
+      ID:       1,
+      Name:     "John Doe",
+      Age:      30,
+      Score:    4.5,
+      Location: "New York",
+      Role:     "admin",
+    },
+    {
+      ID:       2,
+      Name:     "Jane Smith",
+      Age:      25,
+      Score:    3.8,
+      Location: "Los Angeles",
+      Role:     "user",
+    },
+    {
+      ID:       3,
+      Name:     "Bob Johnson",
+      Age:      35,
+      Score:    4.2,
+      Location: "Chicago",
+      Role:     "user",
+    },
+    // This one will be dropped:
+    {
+      ID:       4,
+      Name:     "Alice Smith",
+      Age:      25,
+      Score:    3.8,
+      Location: "Los Angeles",
+      Role:     "admin",
+    },
+  }
+
+  q := `(age >= 30 and score > 4.0) or (location:"Los Angeles" and role:"user")`
+  ast, _ := query.Parse("test", []byte(q))
+  expr := ast.(query.Expr)
+
+  matcher := &match.StructMatcher{}
+
+  filtered := make([]User, 0, len(users))
+
+  for _, user := range users {
+    if expr.Match(&user, matcher) {
+      filtered = append(filtered, user)
+    }
+  }
+
+  fmt.Println(filtered)
+  // [{1 John Doe 30 4.5 New York admin} {2 Jane Smith 25 3.8 Los Angeles user} {3 Bob Johnson 35 4.2 Chicago user}]
+}
+```
+
+See [match_example_test.go](match_example_test.go) for more examples.
 
 ## Query syntax
 

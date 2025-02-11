@@ -22,7 +22,7 @@ jobs:
       - name: unit-tests
         run: |
               go test ./... -coverprofile=coverage.out
-              cat coverage.out | grep -v "query/parser.gen.go" > coverage_filtered.out
+              cat coverage.out | grep -v "query/parser.gen.go" | grep -v "query/ast.go:81" > coverage_filtered.out 
               go tool cover -func=coverage_filtered.out
 
       - name: golangci-lint

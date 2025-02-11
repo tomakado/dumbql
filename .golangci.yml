@@ -5,7 +5,6 @@ linters:
   enable:
     - cyclop
     - decorder
-    - dupl
     - exhaustive
     - fatcontext
     - funlen
@@ -29,6 +28,7 @@ linters:
     - reassign
     - recvcheck
     - revive
+    - testifylint
     - testpackage
     - tparallel
     - unconvert

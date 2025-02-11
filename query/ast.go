@@ -14,11 +14,13 @@ type Expr interface {
 	fmt.Stringer
 	sq.Sqlizer
 
+	Match(target any, matcher Matcher) bool
 	Validate(schema.Schema) (Expr, error)
 }
 
 type Valuer interface {
 	Value() any
+	Match(target any, op FieldOperator) bool
 }
 
 // BinaryExpr represents a binary operation (`and`, `or`, `AND`, `OR`) between two expressions.
@@ -57,8 +59,8 @@ type StringLiteral struct {
 	StringValue string
 }
 
-func (t *StringLiteral) String() string { return strconv.Quote(t.StringValue) }
-func (t *StringLiteral) Value() any     { return t.StringValue }
+func (s *StringLiteral) String() string { return strconv.Quote(s.StringValue) }
+func (s *StringLiteral) Value() any     { return s.StringValue }
 
 type NumberLiteral struct {
 	NumberValue float64

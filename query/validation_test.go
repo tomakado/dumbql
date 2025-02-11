@@ -51,7 +51,7 @@ func TestBinaryExpr_Validate(t *testing.T) { //nolint:funlen
 		require.True(t, isNumberLiteral)
 
 		require.Equal(t, int64(42), integerLiteral.IntegerValue)
-		require.Equal(t, math.Pi, numberLiteral.NumberValue)
+		require.InDelta(t, math.Pi, numberLiteral.NumberValue, 0.01)
 	})
 
 	t.Run("negative", func(t *testing.T) {
@@ -84,7 +84,7 @@ func TestBinaryExpr_Validate(t *testing.T) { //nolint:funlen
 			numberLiteral, isNumberLiteral := fieldExpr.Value.(*query.NumberLiteral)
 			require.True(t, isNumberLiteral)
 
-			require.Equal(t, math.Pi, numberLiteral.NumberValue)
+			require.InDelta(t, math.Pi, numberLiteral.NumberValue, 0.01)
 		})
 
 		t.Run("right rule error", func(t *testing.T) {
@@ -289,7 +289,7 @@ func TestFieldExpr_Validate(t *testing.T) { //nolint:funlen
 			require.True(t, isNumberLiteral)
 
 			require.Equal(t, int64(42), integerLiteral.IntegerValue)
-			require.Equal(t, math.Pi, numberLiteral.NumberValue)
+			require.InDelta(t, math.Pi, numberLiteral.NumberValue, 0.01)
 		})
 	})
 
