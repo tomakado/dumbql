@@ -1,6 +1,11 @@
-# dumbql ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/tomakado/dumbql) ![GitHub License](https://img.shields.io/github/license/tomakado/dumbql) ![GitHub Tag](https://img.shields.io/github/v/tag/tomakado/dumbql) [![Go Report Card](https://goreportcard.com/badge/go.tomakado.io/dumbql)](https://goreportcard.com/report/go.tomakado.io/dumbql) [![CI](https://github.com/tomakado/dumbql/actions/workflows/main.yml/badge.svg)](https://github.com/tomakado/dumbql/actions/workflows/main.yml) [![codecov](https://codecov.io/gh/tomakado/dumbql/graph/badge.svg?token=15IWJO0R0K)](https://codecov.io/gh/tomakado/dumbql) [![Go Reference](https://pkg.go.dev/badge/go.tomakado.io/dumbql.svg)](https://pkg.go.dev/go.tomakado.io/dumbql)
+<div align="center">
+<h1>DumbQL</h1>
+    
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/tomakado/dumbql) ![GitHub License](https://img.shields.io/github/license/tomakado/dumbql) ![GitHub Tag](https://img.shields.io/github/v/tag/tomakado/dumbql) [![Go Report Card](https://goreportcard.com/badge/go.tomakado.io/dumbql)](https://goreportcard.com/report/go.tomakado.io/dumbql) [![CI](https://github.com/tomakado/dumbql/actions/workflows/main.yml/badge.svg)](https://github.com/tomakado/dumbql/actions/workflows/main.yml) [![codecov](https://codecov.io/gh/tomakado/dumbql/graph/badge.svg?token=15IWJO0R0K)](https://codecov.io/gh/tomakado/dumbql) [![Go Reference](https://pkg.go.dev/badge/go.tomakado.io/dumbql.svg)](https://pkg.go.dev/go.tomakado.io/dumbql)
 
-Simple (dumb) query language and parser for Go. 
+Simple (dumb?) query language and parser for Go.
+
+</div>
 
 ## Features
 
@@ -8,7 +13,7 @@ Simple (dumb) query language and parser for Go.
 - Boolean expressions (`age >= 18 and city = Barcelona`, `occupation = designer or occupation = "ux analyst"`)
 - One-of/In expressions (`occupation = [designer, "ux analyst"]`)
 - Schema validation
-- Drop-in usage with [squirrel](https://github.com/Masterminds/squirrel) query builder or SQL drivers directly
+- Drop-in usage with [squirrel](https://github.com/Masterminds/squirrel) or SQL drivers directly
 - Struct matching with `dumbql` struct tag
 
 ## Examples
@@ -252,4 +257,4 @@ If number does not have digits after `.` it's treated as integer and stored as `
 
 ### Strings
 
-String is a sequence on Unicode characters surrounded by double quotes (`"`). In some cases like single word it's possible to write string value without double quotes.
+String is a sequence of Unicode characters surrounded by double quotes (`"`). In some cases like single word it's possible to write string value without double quotes.
