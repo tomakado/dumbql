@@ -57,11 +57,11 @@ jobs:
               cat $GITHUB_WORKSPACE/coverage.out | grep -v "query/parser.gen.go" | grep -v "query/ast.go:81" > $GITHUB_WORKSPACE/coverage_filtered.out 
               go tool cover -func=$GITHUB_WORKSPACE/coverage_filtered.out
 
-      - name: coveralls
-        uses: coverallsapp/github-action@v2
+      - name: codecov
+        uses: codecov/codecov-action@v5
         with:
-          file:   $GITHUB_WORKSPACE/coverage_filtered.out
-          format: golang
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: $GITHUB_WORKSPACE/coverage_filtered.out
 
   analysis:
     needs:   setup
