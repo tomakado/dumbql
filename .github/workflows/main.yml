@@ -1,15 +1,14 @@
 name: CI
 
 on:
-  pull_request: {}
+  pull_request: { }
   push:
     branches:
       - main
 
 jobs:
-  checks:
+  setup:
     runs-on: ubuntu-latest
-
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -19,21 +18,30 @@ jobs:
         with:
           go-version: '1.23'
 
+  tests:
+    needs:   setup
+    runs-on: ubuntu-latest
+    steps:
       - name: unit-tests
-        run: |
+        run:  |
               go test ./... -coverprofile=$GITHUB_WORKSPACE/coverage.out
               cat $GITHUB_WORKSPACE/coverage.out | grep -v "query/parser.gen.go" | grep -v "query/ast.go:81" > $GITHUB_WORKSPACE/coverage_filtered.out 
-              go tool cover -func=coverage_filtered.out
+              go tool cover -func=$GITHUB_WORKSPACE/coverage_filtered.out
 
       - name: install-goveralls
-        run: |
+        run:  |
               go install github.com/mattn/goveralls@latest
 
-      - name: submit-coverage
-        run: $(go env GOPATH)/bin/goveralls -service="github" -coverprofile=$GITHUB_WORKSPACE/coverage_filtered.out
-        env:
-          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          file:   $GITHUB_WORKSPACE/coverage_filtered.out
+          format: golang
 
+  analysis:
+    needs:   setup
+    runs-on: ubuntu-latest
+    steps:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
