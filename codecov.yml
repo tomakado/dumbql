@@ -1,0 +1,3 @@
+codecov:
+  ignore:
+    - "query/parser.gen.go"
