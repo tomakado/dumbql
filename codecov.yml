@@ -1,0 +1,2 @@
+ignore:
+  - "query/parser.gen.go"
