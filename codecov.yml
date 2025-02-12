@@ -1,3 +1,2 @@
-codecov:
-  ignore:
-    - "query/parser.gen.go"
+ignore:
+  - "query/parser.gen.go"
