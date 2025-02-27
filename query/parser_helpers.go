@@ -94,15 +94,12 @@ func parseFieldExpression(field, op, value any) (any, error) {
 }
 
 func parseNumber(c *current) (any, error) {
-	if val, err := strconv.Atoi(string(c.text)); err == nil {
-		return &IntegerLiteral{IntegerValue: int64(val)}, nil
+	val, err := strconv.ParseFloat(string(c.text), 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid number literal: %q", string(c.text))
 	}
-
-	if val, err := strconv.ParseFloat(string(c.text), 64); err == nil {
-		return &NumberLiteral{NumberValue: val}, nil
-	}
-
-	return nil, fmt.Errorf("invalid number literal: %q", string(c.text))
+	
+	return &NumberLiteral{NumberValue: val}, nil
 }
 
 func parseString(c *current) (any, error) {

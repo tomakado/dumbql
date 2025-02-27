@@ -27,6 +27,31 @@ func All(rules ...RuleFunc) RuleFunc {
 
 func InRange[T Numeric](min, max T) RuleFunc { //nolint:revive
 	return func(field Field, value any) error {
+		// Special case for float64 value being compared with int64 min/max
+		if fv, ok := value.(float64); ok {
+			if iv_min, ok := any(min).(int64); ok {
+				if iv_max, ok := any(max).(int64); ok {
+					if fv < float64(iv_min) || fv > float64(iv_max) {
+						return fmt.Errorf("field %q: value must be in range [%v, %v], got %v", field, min, max, fv)
+					}
+					return nil
+				}
+			}
+		}
+		
+		// Special case for int64 value being compared with float64 min/max
+		if iv, ok := value.(int64); ok {
+			if fv_min, ok := any(min).(float64); ok {
+				if fv_max, ok := any(max).(float64); ok {
+					if float64(iv) < fv_min || float64(iv) > fv_max {
+						return fmt.Errorf("field %q: value must be in range [%v, %v], got %v", field, min, max, iv)
+					}
+					return nil
+				}
+			}
+		}
+
+		// Regular case for matching types
 		if v, ok := value.(T); ok {
 			if v < min || v > max {
 				return fmt.Errorf("field %q: value must be in range [%v, %v], got %v", field, min, max, v)
@@ -39,6 +64,27 @@ func InRange[T Numeric](min, max T) RuleFunc { //nolint:revive
 
 func Min[T Numeric](min T) RuleFunc { //nolint:revive
 	return func(field Field, value any) error {
+		// Special case for float64 value being compared with int64 min
+		if fv, ok := value.(float64); ok {
+			if iv, ok := any(min).(int64); ok {
+				if fv < float64(iv) {
+					return fmt.Errorf("field %q: value must be equal or greater than %v, got %v", field, min, fv)
+				}
+				return nil
+			}
+		}
+		
+		// Special case for int64 value being compared with float64 min
+		if iv, ok := value.(int64); ok {
+			if fv, ok := any(min).(float64); ok {
+				if float64(iv) < fv {
+					return fmt.Errorf("field %q: value must be equal or greater than %v, got %v", field, min, iv)
+				}
+				return nil
+			}
+		}
+
+		// Regular case for matching types
 		if v, ok := value.(T); ok {
 			if v < min {
 				return fmt.Errorf("field %q: value must be equal or greater than %v, got %v", field, min, v)
@@ -51,6 +97,27 @@ func Min[T Numeric](min T) RuleFunc { //nolint:revive
 
 func Max[T Numeric](max T) RuleFunc { //nolint:revive
 	return func(field Field, value any) error {
+		// Special case for float64 value being compared with int64 max
+		if fv, ok := value.(float64); ok {
+			if iv, ok := any(max).(int64); ok {
+				if fv > float64(iv) {
+					return fmt.Errorf("field %q: value must be equal or less than %v, got %v", field, max, fv)
+				}
+				return nil
+			}
+		}
+		
+		// Special case for int64 value being compared with float64 max
+		if iv, ok := value.(int64); ok {
+			if fv, ok := any(max).(float64); ok {
+				if float64(iv) > fv {
+					return fmt.Errorf("field %q: value must be equal or less than %v, got %v", field, max, iv)
+				}
+				return nil
+			}
+		}
+
+		// Regular case for matching types
 		if v, ok := value.(T); ok {
 			if v > max {
 				return fmt.Errorf("field %q: value must be equal or less than %v, got %v", field, max, v)

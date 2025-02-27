@@ -22,7 +22,7 @@ func TestBinaryExpr_Validate(t *testing.T) { //nolint:funlen
 			Left: &query.FieldExpr{
 				Field: "left",
 				Op:    query.Equal,
-				Value: &query.IntegerLiteral{IntegerValue: 42},
+				Value: &query.NumberLiteral{NumberValue: 42},
 			},
 			Op: query.And,
 			Right: &query.FieldExpr{
@@ -44,14 +44,14 @@ func TestBinaryExpr_Validate(t *testing.T) { //nolint:funlen
 		rightFieldExpr, isRightFieldExpr := binaryExpr.Right.(*query.FieldExpr)
 		require.True(t, isRightFieldExpr)
 
-		integerLiteral, isIntegerLiteral := leftFieldExpr.Value.(*query.IntegerLiteral)
-		require.True(t, isIntegerLiteral)
+		leftNumberLiteral, isLeftNumberLiteral := leftFieldExpr.Value.(*query.NumberLiteral)
+		require.True(t, isLeftNumberLiteral)
 
-		numberLiteral, isNumberLiteral := rightFieldExpr.Value.(*query.NumberLiteral)
-		require.True(t, isNumberLiteral)
+		rightNumberLiteral, isRightNumberLiteral := rightFieldExpr.Value.(*query.NumberLiteral)
+		require.True(t, isRightNumberLiteral)
 
-		require.Equal(t, int64(42), integerLiteral.IntegerValue)
-		require.InDelta(t, math.Pi, numberLiteral.NumberValue, 0.01)
+		require.Equal(t, 42.0, leftNumberLiteral.NumberValue)
+		require.InDelta(t, math.Pi, rightNumberLiteral.NumberValue, 0.01)
 	})
 
 	t.Run("negative", func(t *testing.T) {
@@ -65,7 +65,7 @@ func TestBinaryExpr_Validate(t *testing.T) { //nolint:funlen
 				Left: &query.FieldExpr{
 					Field: "left",
 					Op:    query.Equal,
-					Value: &query.IntegerLiteral{IntegerValue: 42},
+					Value: &query.NumberLiteral{NumberValue: 42},
 				},
 				Op: query.And,
 				Right: &query.FieldExpr{
@@ -97,7 +97,7 @@ func TestBinaryExpr_Validate(t *testing.T) { //nolint:funlen
 				Left: &query.FieldExpr{
 					Field: "left",
 					Op:    query.Equal,
-					Value: &query.IntegerLiteral{IntegerValue: 42},
+					Value: &query.NumberLiteral{NumberValue: 42},
 				},
 				Op: query.And,
 				Right: &query.FieldExpr{
@@ -113,10 +113,10 @@ func TestBinaryExpr_Validate(t *testing.T) { //nolint:funlen
 			fieldExpr, isFieldExpr := got.(*query.FieldExpr)
 			require.True(t, isFieldExpr)
 
-			integerLiteral, isIntegerLiteral := fieldExpr.Value.(*query.IntegerLiteral)
-			require.True(t, isIntegerLiteral)
+			numberLiteral, isNumberLiteral := fieldExpr.Value.(*query.NumberLiteral)
+			require.True(t, isNumberLiteral)
 
-			require.Equal(t, int64(42), integerLiteral.IntegerValue)
+			require.Equal(t, 42.0, numberLiteral.NumberValue)
 		})
 
 		t.Run("left and right rule error", func(t *testing.T) {
@@ -129,7 +129,7 @@ func TestBinaryExpr_Validate(t *testing.T) { //nolint:funlen
 				Left: &query.FieldExpr{
 					Field: "left",
 					Op:    query.Equal,
-					Value: &query.IntegerLiteral{IntegerValue: 42},
+					Value: &query.NumberLiteral{NumberValue: 42},
 				},
 				Right: &query.FieldExpr{
 					Field: "right",
@@ -150,7 +150,7 @@ func TestBinaryExpr_Validate(t *testing.T) { //nolint:funlen
 				Left: &query.FieldExpr{
 					Field: "left",
 					Op:    query.Equal,
-					Value: &query.IntegerLiteral{IntegerValue: 42},
+					Value: &query.NumberLiteral{NumberValue: 42},
 				},
 				Right: &query.FieldExpr{
 					Field: "right",
@@ -176,7 +176,7 @@ func TestNotExpr_Validate(t *testing.T) { //nolint:funlen
 			Expr: &query.FieldExpr{
 				Field: "field",
 				Op:    query.Equal,
-				Value: &query.IntegerLiteral{IntegerValue: 42},
+				Value: &query.NumberLiteral{NumberValue: 42},
 			},
 		}
 
@@ -189,10 +189,10 @@ func TestNotExpr_Validate(t *testing.T) { //nolint:funlen
 		fieldExpr, isFieldExpr := notExpr.Expr.(*query.FieldExpr)
 		require.True(t, isFieldExpr)
 
-		integerLiteral, isIntegerLiteral := fieldExpr.Value.(*query.IntegerLiteral)
-		require.True(t, isIntegerLiteral)
+		numberLiteral, isNumberLiteral := fieldExpr.Value.(*query.NumberLiteral)
+		require.True(t, isNumberLiteral)
 
-		require.Equal(t, int64(42), integerLiteral.IntegerValue)
+		require.Equal(t, 42.0, numberLiteral.NumberValue)
 	})
 
 	t.Run("negative", func(t *testing.T) {
@@ -205,7 +205,7 @@ func TestNotExpr_Validate(t *testing.T) { //nolint:funlen
 				Expr: &query.FieldExpr{
 					Field: "field",
 					Op:    query.Equal,
-					Value: &query.IntegerLiteral{IntegerValue: 42},
+					Value: &query.NumberLiteral{NumberValue: 42},
 				},
 			}
 
@@ -221,7 +221,7 @@ func TestNotExpr_Validate(t *testing.T) { //nolint:funlen
 				Expr: &query.FieldExpr{
 					Field: "field",
 					Op:    query.Equal,
-					Value: &query.IntegerLiteral{IntegerValue: 42},
+					Value: &query.NumberLiteral{NumberValue: 42},
 				},
 			}
 
@@ -242,7 +242,7 @@ func TestFieldExpr_Validate(t *testing.T) { //nolint:funlen
 			expr := &query.FieldExpr{
 				Field: "field",
 				Op:    query.Equal,
-				Value: &query.IntegerLiteral{IntegerValue: 42},
+				Value: &query.NumberLiteral{NumberValue: 42},
 			}
 
 			got, err := expr.Validate(schm)
@@ -251,10 +251,10 @@ func TestFieldExpr_Validate(t *testing.T) { //nolint:funlen
 			fieldExpr, isFieldExpr := got.(*query.FieldExpr)
 			require.True(t, isFieldExpr)
 
-			integerLiteral, isIntegerLiteral := fieldExpr.Value.(*query.IntegerLiteral)
-			require.True(t, isIntegerLiteral)
+			numberLiteral, isNumberLiteral := fieldExpr.Value.(*query.NumberLiteral)
+			require.True(t, isNumberLiteral)
 
-			require.Equal(t, int64(42), integerLiteral.IntegerValue)
+			require.Equal(t, 42.0, numberLiteral.NumberValue)
 		})
 
 		t.Run("one of", func(t *testing.T) {
@@ -267,7 +267,7 @@ func TestFieldExpr_Validate(t *testing.T) { //nolint:funlen
 				Op:    query.Equal,
 				Value: &query.OneOfExpr{
 					Values: []query.Valuer{
-						&query.IntegerLiteral{IntegerValue: 42},
+						&query.NumberLiteral{NumberValue: 42},
 						&query.NumberLiteral{NumberValue: math.Pi},
 					},
 				},
@@ -282,14 +282,14 @@ func TestFieldExpr_Validate(t *testing.T) { //nolint:funlen
 			oneOfExpr, isOneOfExpr := fieldExpr.Value.(*query.OneOfExpr)
 			require.True(t, isOneOfExpr)
 
-			integerLiteral, isIntegerLiteral := oneOfExpr.Values[0].(*query.IntegerLiteral)
-			require.True(t, isIntegerLiteral)
+			number1Literal, isNumber1Literal := oneOfExpr.Values[0].(*query.NumberLiteral)
+			require.True(t, isNumber1Literal)
 
-			numberLiteral, isNumberLiteral := oneOfExpr.Values[1].(*query.NumberLiteral)
-			require.True(t, isNumberLiteral)
+			number2Literal, isNumber2Literal := oneOfExpr.Values[1].(*query.NumberLiteral)
+			require.True(t, isNumber2Literal)
 
-			require.Equal(t, int64(42), integerLiteral.IntegerValue)
-			require.InDelta(t, math.Pi, numberLiteral.NumberValue, 0.01)
+			require.Equal(t, 42.0, number1Literal.NumberValue)
+			require.InDelta(t, math.Pi, number2Literal.NumberValue, 0.01)
 		})
 	})
 
@@ -302,7 +302,7 @@ func TestFieldExpr_Validate(t *testing.T) { //nolint:funlen
 			expr := &query.FieldExpr{
 				Field: "field",
 				Op:    query.Equal,
-				Value: &query.IntegerLiteral{IntegerValue: 42},
+				Value: &query.NumberLiteral{NumberValue: 42},
 			}
 
 			got, err := expr.Validate(schm)
@@ -312,7 +312,10 @@ func TestFieldExpr_Validate(t *testing.T) { //nolint:funlen
 
 		t.Run("one of rule error", func(t *testing.T) {
 			schm := schema.Schema{
-				"field": schema.Is[int64](),
+				"field": schema.All(
+					schema.Is[float64](),
+					schema.EqualsOneOf(42.0),
+				),
 			}
 
 			expr := &query.FieldExpr{
@@ -320,8 +323,8 @@ func TestFieldExpr_Validate(t *testing.T) { //nolint:funlen
 				Op:    query.Equal,
 				Value: &query.OneOfExpr{
 					Values: []query.Valuer{
-						&query.IntegerLiteral{IntegerValue: 42},
-						&query.NumberLiteral{NumberValue: math.Pi},
+						&query.NumberLiteral{NumberValue: 42}, // This will pass
+						&query.NumberLiteral{NumberValue: 99}, // This will fail validation
 					},
 				},
 			}
@@ -335,11 +338,11 @@ func TestFieldExpr_Validate(t *testing.T) { //nolint:funlen
 			oneOfExpr, isOneOfExpr := fieldExpr.Value.(*query.OneOfExpr)
 			require.True(t, isOneOfExpr)
 
-			integerLiteral, isIntegerLiteral := oneOfExpr.Values[0].(*query.IntegerLiteral)
-			require.True(t, isIntegerLiteral)
-
 			assert.Len(t, oneOfExpr.Values, 1)
-			require.Equal(t, int64(42), integerLiteral.IntegerValue)
+			
+			numberLiteral, isNumberLiteral := oneOfExpr.Values[0].(*query.NumberLiteral)
+			require.True(t, isNumberLiteral)
+			require.Equal(t, 42.0, numberLiteral.NumberValue)
 		})
 
 		t.Run("unknown field", func(t *testing.T) {
@@ -348,7 +351,7 @@ func TestFieldExpr_Validate(t *testing.T) { //nolint:funlen
 			expr := &query.FieldExpr{
 				Field: "field",
 				Op:    query.Equal,
-				Value: &query.IntegerLiteral{IntegerValue: 42},
+				Value: &query.NumberLiteral{NumberValue: 42},
 			}
 
 			got, err := expr.Validate(schm)
