@@ -6,102 +6,102 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestConvertToFloat64(t *testing.T) {
+func TestConvertToFloat64(t *testing.T) { //nolint:funlen
 	tests := []struct {
-		name    string
-		input   any
-		want    float64
-		wantOk  bool
+		name   string
+		input  any
+		want   float64
+		wantOk bool
 	}{
 		{
-			name:    "float64",
-			input:   float64(42.5),
-			want:    42.5,
-			wantOk:  true,
+			name:   "float64",
+			input:  float64(42.5),
+			want:   42.5,
+			wantOk: true,
 		},
 		{
-			name:    "float32",
-			input:   float32(42.5),
-			want:    42.5,
-			wantOk:  true,
+			name:   "float32",
+			input:  float32(42.5),
+			want:   42.5,
+			wantOk: true,
 		},
 		{
-			name:    "int",
-			input:   int(42),
-			want:    42.0,
-			wantOk:  true,
+			name:   "int",
+			input:  int(42),
+			want:   42.0,
+			wantOk: true,
 		},
 		{
-			name:    "int8",
-			input:   int8(42),
-			want:    42.0,
-			wantOk:  true,
+			name:   "int8",
+			input:  int8(42),
+			want:   42.0,
+			wantOk: true,
 		},
 		{
-			name:    "int16",
-			input:   int16(42),
-			want:    42.0,
-			wantOk:  true,
+			name:   "int16",
+			input:  int16(42),
+			want:   42.0,
+			wantOk: true,
 		},
 		{
-			name:    "int32",
-			input:   int32(42),
-			want:    42.0,
-			wantOk:  true,
+			name:   "int32",
+			input:  int32(42),
+			want:   42.0,
+			wantOk: true,
 		},
 		{
-			name:    "int64",
-			input:   int64(42),
-			want:    42.0,
-			wantOk:  true,
+			name:   "int64",
+			input:  int64(42),
+			want:   42.0,
+			wantOk: true,
 		},
 		{
-			name:    "uint",
-			input:   uint(42),
-			want:    42.0,
-			wantOk:  true,
+			name:   "uint",
+			input:  uint(42),
+			want:   42.0,
+			wantOk: true,
 		},
 		{
-			name:    "uint8",
-			input:   uint8(42),
-			want:    42.0,
-			wantOk:  true,
+			name:   "uint8",
+			input:  uint8(42),
+			want:   42.0,
+			wantOk: true,
 		},
 		{
-			name:    "uint16",
-			input:   uint16(42),
-			want:    42.0,
-			wantOk:  true,
+			name:   "uint16",
+			input:  uint16(42),
+			want:   42.0,
+			wantOk: true,
 		},
 		{
-			name:    "uint32",
-			input:   uint32(42),
-			want:    42.0,
-			wantOk:  true,
+			name:   "uint32",
+			input:  uint32(42),
+			want:   42.0,
+			wantOk: true,
 		},
 		{
-			name:    "uint64",
-			input:   uint64(42),
-			want:    42.0,
-			wantOk:  true,
+			name:   "uint64",
+			input:  uint64(42),
+			want:   42.0,
+			wantOk: true,
 		},
 		{
-			name:    "string - not convertible",
-			input:   "42",
-			want:    0.0,
-			wantOk:  false,
+			name:   "string - not convertible",
+			input:  "42",
+			want:   0.0,
+			wantOk: false,
 		},
 		{
-			name:    "bool - not convertible",
-			input:   true,
-			want:    0.0,
-			wantOk:  false,
+			name:   "bool - not convertible",
+			input:  true,
+			want:   0.0,
+			wantOk: false,
 		},
 		{
-			name:    "nil - not convertible",
-			input:   nil,
-			want:    0.0,
-			wantOk:  false,
+			name:   "nil - not convertible",
+			input:  nil,
+			want:   0.0,
+			wantOk: false,
 		},
 	}
 
@@ -116,7 +116,7 @@ func TestConvertToFloat64(t *testing.T) {
 	}
 }
 
-func TestNumberLiteral_Match_TypeConversion(t *testing.T) {
+func TestNumberLiteral_Match_TypeConversion(t *testing.T) { //nolint:funlen
 	tests := []struct {
 		name     string
 		literal  *NumberLiteral

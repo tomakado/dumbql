@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestInRange_CrossTypeComparisons(t *testing.T) {
+func TestInRange_CrossTypeComparisons(t *testing.T) { //nolint:funlen
 	tests := []struct {
 		name    string
 		min     any
@@ -89,14 +89,14 @@ func TestInRange_CrossTypeComparisons(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var rule RuleFunc
-			
-			switch min := tt.min.(type) {
+
+			switch minValue := tt.min.(type) {
 			case int64:
-				rule = InRange[int64](min, tt.max.(int64))
+				rule = InRange[int64](minValue, tt.max.(int64))
 			case float64:
-				rule = InRange[float64](min, tt.max.(float64))
+				rule = InRange[float64](minValue, tt.max.(float64))
 			}
-			
+
 			err := rule("test_field", tt.value)
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -107,7 +107,7 @@ func TestInRange_CrossTypeComparisons(t *testing.T) {
 	}
 }
 
-func TestMin_CrossTypeComparisons(t *testing.T) {
+func TestMin_CrossTypeComparisons(t *testing.T) { //nolint:funlen
 	tests := []struct {
 		name    string
 		min     any
@@ -155,14 +155,14 @@ func TestMin_CrossTypeComparisons(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var rule RuleFunc
-			
-			switch min := tt.min.(type) {
+
+			switch minValue := tt.min.(type) {
 			case int64:
-				rule = Min[int64](min)
+				rule = Min[int64](minValue)
 			case float64:
-				rule = Min[float64](min)
+				rule = Min[float64](minValue)
 			}
-			
+
 			err := rule("test_field", tt.value)
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -173,7 +173,7 @@ func TestMin_CrossTypeComparisons(t *testing.T) {
 	}
 }
 
-func TestMax_CrossTypeComparisons(t *testing.T) {
+func TestMax_CrossTypeComparisons(t *testing.T) { //nolint:funlen
 	tests := []struct {
 		name    string
 		max     any
@@ -221,14 +221,14 @@ func TestMax_CrossTypeComparisons(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var rule RuleFunc
-			
-			switch max := tt.max.(type) {
+
+			switch maxValue := tt.max.(type) {
 			case int64:
-				rule = Max[int64](max)
+				rule = Max[int64](maxValue)
 			case float64:
-				rule = Max[float64](max)
+				rule = Max[float64](maxValue)
 			}
-			
+
 			err := rule("test_field", tt.value)
 			if tt.wantErr {
 				assert.Error(t, err)
