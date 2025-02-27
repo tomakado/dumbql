@@ -37,7 +37,7 @@ func TestBinaryExpr_Match(t *testing.T) { //nolint:funlen
 				Right: &query.FieldExpr{
 					Field: "age",
 					Op:    query.Equal,
-					Value: &query.IntegerLiteral{IntegerValue: 30},
+					Value: &query.NumberLiteral{NumberValue: 30},
 				},
 			},
 			want: true,
@@ -54,7 +54,7 @@ func TestBinaryExpr_Match(t *testing.T) { //nolint:funlen
 				Right: &query.FieldExpr{
 					Field: "age",
 					Op:    query.Equal,
-					Value: &query.IntegerLiteral{IntegerValue: 30},
+					Value: &query.NumberLiteral{NumberValue: 30},
 				},
 			},
 			want: false,
@@ -71,7 +71,7 @@ func TestBinaryExpr_Match(t *testing.T) { //nolint:funlen
 				Right: &query.FieldExpr{
 					Field: "age",
 					Op:    query.Equal,
-					Value: &query.IntegerLiteral{IntegerValue: 30},
+					Value: &query.NumberLiteral{NumberValue: 30},
 				},
 			},
 			want: true,
@@ -88,7 +88,7 @@ func TestBinaryExpr_Match(t *testing.T) { //nolint:funlen
 				Right: &query.FieldExpr{
 					Field: "age",
 					Op:    query.Equal,
-					Value: &query.IntegerLiteral{IntegerValue: 25},
+					Value: &query.NumberLiteral{NumberValue: 25},
 				},
 			},
 			want: true,
@@ -105,7 +105,7 @@ func TestBinaryExpr_Match(t *testing.T) { //nolint:funlen
 				Right: &query.FieldExpr{
 					Field: "age",
 					Op:    query.Equal,
-					Value: &query.IntegerLiteral{IntegerValue: 25},
+					Value: &query.NumberLiteral{NumberValue: 25},
 				},
 			},
 			want: false,
@@ -164,7 +164,7 @@ func TestNotExpr_Match(t *testing.T) {
 					Right: &query.FieldExpr{
 						Field: "age",
 						Op:    query.Equal,
-						Value: &query.IntegerLiteral{IntegerValue: 30},
+						Value: &query.NumberLiteral{NumberValue: 30},
 					},
 				},
 			},
@@ -217,7 +217,7 @@ func TestFieldExpr_Match(t *testing.T) { //nolint:funlen
 			expr: &query.FieldExpr{
 				Field: "age",
 				Op:    query.GreaterThan,
-				Value: &query.IntegerLiteral{IntegerValue: 25},
+				Value: &query.NumberLiteral{NumberValue: 25},
 			},
 			want: true,
 		},
@@ -379,9 +379,9 @@ func TestOneOfExpr_Match(t *testing.T) { //nolint:funlen
 			name: "integer equal - match",
 			expr: &query.OneOfExpr{
 				Values: []query.Valuer{
-					&query.IntegerLiteral{IntegerValue: 1},
-					&query.IntegerLiteral{IntegerValue: 2},
-					&query.IntegerLiteral{IntegerValue: 3},
+					&query.NumberLiteral{NumberValue: 1},
+					&query.NumberLiteral{NumberValue: 2},
+					&query.NumberLiteral{NumberValue: 3},
 				},
 			},
 			target: int64(2),
@@ -392,9 +392,9 @@ func TestOneOfExpr_Match(t *testing.T) { //nolint:funlen
 			name: "integer equal - no match",
 			expr: &query.OneOfExpr{
 				Values: []query.Valuer{
-					&query.IntegerLiteral{IntegerValue: 1},
-					&query.IntegerLiteral{IntegerValue: 2},
-					&query.IntegerLiteral{IntegerValue: 3},
+					&query.NumberLiteral{NumberValue: 1},
+					&query.NumberLiteral{NumberValue: 2},
+					&query.NumberLiteral{NumberValue: 3},
 				},
 			},
 			target: int64(4),
@@ -432,7 +432,7 @@ func TestOneOfExpr_Match(t *testing.T) { //nolint:funlen
 			expr: &query.OneOfExpr{
 				Values: []query.Valuer{
 					&query.StringLiteral{StringValue: "one"},
-					&query.IntegerLiteral{IntegerValue: 2},
+					&query.NumberLiteral{NumberValue: 2},
 					&query.NumberLiteral{NumberValue: 3.3},
 				},
 			},

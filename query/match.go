@@ -40,22 +40,46 @@ func (s *StringLiteral) Match(target any, op FieldOperator) bool {
 	return matchString(str, s.StringValue, op)
 }
 
-func (i *IntegerLiteral) Match(target any, op FieldOperator) bool {
-	intVal, ok := target.(int64)
+func (n *NumberLiteral) Match(target any, op FieldOperator) bool {
+	// Convert target to float64 regardless of its type
+	targetFloat, ok := convertToFloat64(target)
 	if !ok {
 		return false
 	}
 
-	return matchNum(intVal, i.IntegerValue, op)
+	return matchNum(targetFloat, n.NumberValue, op)
 }
 
-func (n *NumberLiteral) Match(target any, op FieldOperator) bool {
-	floatVal, ok := target.(float64)
-	if !ok {
-		return false
+// convertToFloat64 converts any numeric type to float64
+func convertToFloat64(v any) (float64, bool) { //nolint:cyclop
+	switch val := v.(type) {
+	case float64:
+		return val, true
+	case float32:
+		return float64(val), true
+	case int:
+		return float64(val), true
+	case int8:
+		return float64(val), true
+	case int16:
+		return float64(val), true
+	case int32:
+		return float64(val), true
+	case int64:
+		return float64(val), true
+	case uint:
+		return float64(val), true
+	case uint8:
+		return float64(val), true
+	case uint16:
+		return float64(val), true
+	case uint32:
+		return float64(val), true
+	case uint64:
+		return float64(val), true
+	default:
+		return 0, false
 	}
-
-	return matchNum(floatVal, n.NumberValue, op)
 }
 
 func (i Identifier) Match(target any, op FieldOperator) bool {
@@ -96,7 +120,7 @@ func matchString(a, b string, op FieldOperator) bool {
 	}
 }
 
-func matchNum[T int64 | float64](a, b T, op FieldOperator) bool {
+func matchNum(a, b float64, op FieldOperator) bool {
 	switch op { //nolint:exhaustive
 	case Equal:
 		return a == b

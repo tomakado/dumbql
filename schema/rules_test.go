@@ -12,26 +12,26 @@ import (
 
 func TestAny(t *testing.T) {
 	t.Run("positive", func(t *testing.T) {
-		rule := schema.Any(schema.Is[int64](), schema.Is[string]())
-		require.NoError(t, rule("positive_int", int64(42)))
+		rule := schema.Any(schema.Is[float64](), schema.Is[string]())
+		require.NoError(t, rule("positive_int", float64(42)))
 		require.NoError(t, rule("positive_string", "Hello, world!"))
 	})
 
 	t.Run("negative", func(t *testing.T) {
-		rule := schema.Any(schema.Is[int64](), schema.Is[string]())
-		require.Error(t, rule("negative", 0.75))
+		rule := schema.Any(schema.Is[float64](), schema.Is[string]())
+		require.Error(t, rule("negative", true))
 	})
 }
 
 func TestAll(t *testing.T) {
 	t.Run("positive", func(t *testing.T) {
-		rule := schema.All(schema.Is[int64](), schema.Min[int64](42))
-		require.NoError(t, rule("positive", int64(42)))
+		rule := schema.All(schema.Is[float64](), schema.Min[float64](42))
+		require.NoError(t, rule("positive", float64(42)))
 	})
 
 	t.Run("negative", func(t *testing.T) {
-		rule := schema.All(schema.Is[int64](), schema.Min[int64](42))
-		require.Error(t, rule("negative", int64(41)))
+		rule := schema.All(schema.Is[float64](), schema.Min[float64](42))
+		require.Error(t, rule("negative", float64(41)))
 	})
 }
 
@@ -66,17 +66,24 @@ func TestMin(t *testing.T) {
 		t.Run("positive", func(t *testing.T) {
 			rule := schema.Min[int64](42)
 			require.NoError(t, rule("positive", int64(42)))
+			// Test our new feature - float64 values should work with int64 min
+			require.NoError(t, rule("positive_float", 42.5))
 		})
 
 		t.Run("negative", func(t *testing.T) {
 			t.Run("wrong value", func(t *testing.T) {
 				rule := schema.Min[int64](42)
 				require.Error(t, rule("negative", int64(41)))
+				// Even with our new feature, lower values should fail
+				require.Error(t, rule("negative_float", 41.5))
 			})
 
 			t.Run("wrong type", func(t *testing.T) {
 				rule := schema.Min[int64](42)
-				require.Error(t, rule("negative", 42.42))
+				// With our improved implementation, float64 values work with int64 minimums
+				require.NoError(t, rule("float_works", 42.42))
+				// But other non-numeric types should still fail
+				require.Error(t, rule("string_fails", "42"))
 			})
 		})
 	})
@@ -95,7 +102,10 @@ func TestMin(t *testing.T) {
 
 			t.Run("wrong type", func(t *testing.T) {
 				rule := schema.Min[float64](42.42)
-				require.Error(t, rule("negative", int64(42)))
+				// With our improved implementation, int64 values work with float64 minimums
+				require.NoError(t, rule("integer_works", int64(43)))
+				// But other non-numeric types should still fail
+				require.Error(t, rule("string_fails", "42.42"))
 			})
 		})
 	})
@@ -106,11 +116,15 @@ func TestMax(t *testing.T) {
 		t.Run("positive", func(t *testing.T) {
 			rule := schema.Max[int64](42)
 			require.NoError(t, rule("positive", int64(42)))
+			// Test our new feature - float64 values should work with int64 max
+			require.NoError(t, rule("positive_float", 41.5))
 		})
 
 		t.Run("negative", func(t *testing.T) {
 			rule := schema.Max[int64](42)
 			require.Error(t, rule("negative", int64(43)))
+			// Even with our new feature, higher values should fail
+			require.Error(t, rule("negative_float", 42.5))
 		})
 	})
 
@@ -223,7 +237,7 @@ func TestIs(t *testing.T) {
 }
 
 func TestEqualsOneOf(t *testing.T) {
-	values := []any{"positive", "hello", "world", 42, 0.75}
+	values := []any{"positive", "hello", "world", 42.0, 0.75}
 
 	t.Run("positive", func(t *testing.T) {
 		rule := schema.EqualsOneOf(values...)
