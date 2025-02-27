@@ -98,7 +98,7 @@ func parseNumber(c *current) (any, error) {
 	if err != nil {
 		return nil, fmt.Errorf("invalid number literal: %q", string(c.text))
 	}
-	
+
 	return &NumberLiteral{NumberValue: val}, nil
 }
 

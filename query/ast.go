@@ -66,14 +66,14 @@ type NumberLiteral struct {
 	NumberValue float64
 }
 
-func (n *NumberLiteral) String() string { 
+func (n *NumberLiteral) String() string {
 	// Format with fixed precision for test compatibility
 	if n.NumberValue == float64(int(n.NumberValue)) {
 		return fmt.Sprintf("%g", n.NumberValue)
 	}
-	return fmt.Sprintf("%.6f", n.NumberValue) 
+	return fmt.Sprintf("%.6f", n.NumberValue)
 }
-func (n *NumberLiteral) Value() any     { return n.NumberValue }
+func (n *NumberLiteral) Value() any { return n.NumberValue }
 
 type Identifier string
 

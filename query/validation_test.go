@@ -50,7 +50,7 @@ func TestBinaryExpr_Validate(t *testing.T) { //nolint:funlen
 		rightNumberLiteral, isRightNumberLiteral := rightFieldExpr.Value.(*query.NumberLiteral)
 		require.True(t, isRightNumberLiteral)
 
-		require.Equal(t, 42.0, leftNumberLiteral.NumberValue)
+		require.InDelta(t, 42.0, leftNumberLiteral.NumberValue, 0.0001)
 		require.InDelta(t, math.Pi, rightNumberLiteral.NumberValue, 0.01)
 	})
 
@@ -116,7 +116,7 @@ func TestBinaryExpr_Validate(t *testing.T) { //nolint:funlen
 			numberLiteral, isNumberLiteral := fieldExpr.Value.(*query.NumberLiteral)
 			require.True(t, isNumberLiteral)
 
-			require.Equal(t, 42.0, numberLiteral.NumberValue)
+			require.InDelta(t, 42.0, numberLiteral.NumberValue, 0.0001)
 		})
 
 		t.Run("left and right rule error", func(t *testing.T) {
@@ -192,7 +192,7 @@ func TestNotExpr_Validate(t *testing.T) { //nolint:funlen
 		numberLiteral, isNumberLiteral := fieldExpr.Value.(*query.NumberLiteral)
 		require.True(t, isNumberLiteral)
 
-		require.Equal(t, 42.0, numberLiteral.NumberValue)
+		require.InDelta(t, 42.0, numberLiteral.NumberValue, 0.0001)
 	})
 
 	t.Run("negative", func(t *testing.T) {
@@ -254,7 +254,7 @@ func TestFieldExpr_Validate(t *testing.T) { //nolint:funlen
 			numberLiteral, isNumberLiteral := fieldExpr.Value.(*query.NumberLiteral)
 			require.True(t, isNumberLiteral)
 
-			require.Equal(t, 42.0, numberLiteral.NumberValue)
+			require.InDelta(t, 42.0, numberLiteral.NumberValue, 0.0001)
 		})
 
 		t.Run("one of", func(t *testing.T) {
@@ -288,7 +288,7 @@ func TestFieldExpr_Validate(t *testing.T) { //nolint:funlen
 			number2Literal, isNumber2Literal := oneOfExpr.Values[1].(*query.NumberLiteral)
 			require.True(t, isNumber2Literal)
 
-			require.Equal(t, 42.0, number1Literal.NumberValue)
+			require.InDelta(t, 42.0, number1Literal.NumberValue, 0.0001)
 			require.InDelta(t, math.Pi, number2Literal.NumberValue, 0.01)
 		})
 	})
@@ -339,10 +339,10 @@ func TestFieldExpr_Validate(t *testing.T) { //nolint:funlen
 			require.True(t, isOneOfExpr)
 
 			assert.Len(t, oneOfExpr.Values, 1)
-			
+
 			numberLiteral, isNumberLiteral := oneOfExpr.Values[0].(*query.NumberLiteral)
 			require.True(t, isNumberLiteral)
-			require.Equal(t, 42.0, numberLiteral.NumberValue)
+			require.InDelta(t, 42.0, numberLiteral.NumberValue, 0.0001)
 		})
 
 		t.Run("unknown field", func(t *testing.T) {

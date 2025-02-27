@@ -25,25 +25,25 @@ func All(rules ...RuleFunc) RuleFunc {
 	}
 }
 
-func InRange[T Numeric](min, max T) RuleFunc { //nolint:revive
+func InRange[T Numeric](min, max T) RuleFunc { //nolint:revive,gocognit,cyclop
 	return func(field Field, value any) error {
 		// Special case for float64 value being compared with int64 min/max
-		if fv, ok := value.(float64); ok {
-			if iv_min, ok := any(min).(int64); ok {
-				if iv_max, ok := any(max).(int64); ok {
-					if fv < float64(iv_min) || fv > float64(iv_max) {
+		if fv, ok := value.(float64); ok { //nolint:nestif
+			if ivMin, ok := any(min).(int64); ok {
+				if ivMax, ok := any(max).(int64); ok {
+					if fv < float64(ivMin) || fv > float64(ivMax) {
 						return fmt.Errorf("field %q: value must be in range [%v, %v], got %v", field, min, max, fv)
 					}
 					return nil
 				}
 			}
 		}
-		
+
 		// Special case for int64 value being compared with float64 min/max
-		if iv, ok := value.(int64); ok {
-			if fv_min, ok := any(min).(float64); ok {
-				if fv_max, ok := any(max).(float64); ok {
-					if float64(iv) < fv_min || float64(iv) > fv_max {
+		if iv, ok := value.(int64); ok { //nolint:nestif
+			if fvMin, ok := any(min).(float64); ok {
+				if fvMax, ok := any(max).(float64); ok {
+					if float64(iv) < fvMin || float64(iv) > fvMax {
 						return fmt.Errorf("field %q: value must be in range [%v, %v], got %v", field, min, max, iv)
 					}
 					return nil
@@ -73,7 +73,7 @@ func Min[T Numeric](min T) RuleFunc { //nolint:revive
 				return nil
 			}
 		}
-		
+
 		// Special case for int64 value being compared with float64 min
 		if iv, ok := value.(int64); ok {
 			if fv, ok := any(min).(float64); ok {
@@ -106,7 +106,7 @@ func Max[T Numeric](max T) RuleFunc { //nolint:revive
 				return nil
 			}
 		}
-		
+
 		// Special case for int64 value being compared with float64 max
 		if iv, ok := value.(int64); ok {
 			if fv, ok := any(max).(float64); ok {

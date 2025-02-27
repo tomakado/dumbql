@@ -42,53 +42,44 @@ func (s *StringLiteral) Match(target any, op FieldOperator) bool {
 
 func (n *NumberLiteral) Match(target any, op FieldOperator) bool {
 	// Convert target to float64 regardless of its type
-	var targetFloat float64
-	var ok bool
-
-	switch v := target.(type) {
-	case float64:
-		targetFloat = v
-		ok = true
-	case float32:
-		targetFloat = float64(v)
-		ok = true
-	case int:
-		targetFloat = float64(v)
-		ok = true
-	case int8:
-		targetFloat = float64(v)
-		ok = true
-	case int16:
-		targetFloat = float64(v)
-		ok = true
-	case int32:
-		targetFloat = float64(v)
-		ok = true
-	case int64:
-		targetFloat = float64(v)
-		ok = true
-	case uint:
-		targetFloat = float64(v)
-		ok = true
-	case uint8:
-		targetFloat = float64(v)
-		ok = true
-	case uint16:
-		targetFloat = float64(v)
-		ok = true
-	case uint32:
-		targetFloat = float64(v)
-		ok = true
-	case uint64:
-		targetFloat = float64(v)
-		ok = true
-	}
-
+	targetFloat, ok := convertToFloat64(target)
 	if !ok {
 		return false
 	}
 
 	return matchNum(targetFloat, n.NumberValue, op)
+}
+
+// convertToFloat64 converts any numeric type to float64
+func convertToFloat64(v any) (float64, bool) { //nolint:cyclop
+	switch val := v.(type) {
+	case float64:
+		return val, true
+	case float32:
+		return float64(val), true
+	case int:
+		return float64(val), true
+	case int8:
+		return float64(val), true
+	case int16:
+		return float64(val), true
+	case int32:
+		return float64(val), true
+	case int64:
+		return float64(val), true
+	case uint:
+		return float64(val), true
+	case uint8:
+		return float64(val), true
+	case uint16:
+		return float64(val), true
+	case uint32:
+		return float64(val), true
+	case uint64:
+		return float64(val), true
+	default:
+		return 0, false
+	}
 }
 
 func (i Identifier) Match(target any, op FieldOperator) bool {
