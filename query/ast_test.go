@@ -38,7 +38,7 @@ func TestOperatorString(t *testing.T) {
 		// Test valid operators
 		assert.Equal(t, "and", query.And.String())
 		assert.Equal(t, "or", query.Or.String())
-		
+
 		// Test invalid operator (default case)
 		type CustomBoolOp query.BooleanOperator
 		invalidOp := query.BooleanOperator(CustomBoolOp(255)) // Invalid operator (max uint8)
@@ -54,7 +54,7 @@ func TestOperatorString(t *testing.T) {
 		assert.Equal(t, "<", query.LessThan.String())
 		assert.Equal(t, "<=", query.LessThanOrEqual.String())
 		assert.Equal(t, "~", query.Like.String())
-		
+
 		// Test invalid operator (default case)
 		type CustomFieldOp query.FieldOperator
 		invalidOp := query.FieldOperator(CustomFieldOp(255)) // Invalid operator (max uint8)
