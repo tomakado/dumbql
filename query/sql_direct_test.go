@@ -4,14 +4,16 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.tomakado.io/dumbql/query"
 )
 
-func TestDirectSqlGeneration(t *testing.T) {
+// TestSimpleLiteralSql tests the ToSql methods for simple literals
+func TestSimpleLiteralSql(t *testing.T) {
 	t.Run("StringLiteral", func(t *testing.T) {
 		sl := &query.StringLiteral{StringValue: "hello"}
 		sql, args, err := sl.ToSql()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "?", sql)
 		assert.Equal(t, []any{"hello"}, args)
 	})
@@ -19,7 +21,7 @@ func TestDirectSqlGeneration(t *testing.T) {
 	t.Run("NumberLiteral", func(t *testing.T) {
 		nl := &query.NumberLiteral{NumberValue: 42.5}
 		sql, args, err := nl.ToSql()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "?", sql)
 		assert.InDelta(t, 42.5, args[0], 0.0001)
 	})
@@ -27,7 +29,7 @@ func TestDirectSqlGeneration(t *testing.T) {
 	t.Run("BoolLiteral", func(t *testing.T) {
 		bl := &query.BoolLiteral{BoolValue: true}
 		sql, args, err := bl.ToSql()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "?", sql)
 		assert.Equal(t, []any{true}, args)
 	})
@@ -35,11 +37,14 @@ func TestDirectSqlGeneration(t *testing.T) {
 	t.Run("Identifier", func(t *testing.T) {
 		id := query.Identifier("fieldname")
 		sql, args, err := id.ToSql()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "fieldname", sql)
 		assert.Empty(t, args)
 	})
+}
 
+// TestComplexSqlGeneration tests the ToSql methods for more complex expressions
+func TestComplexSqlGeneration(t *testing.T) {
 	t.Run("OneOfExpr", func(t *testing.T) {
 		values := []query.Valuer{
 			&query.StringLiteral{StringValue: "one"},
@@ -48,7 +53,7 @@ func TestDirectSqlGeneration(t *testing.T) {
 		}
 		oe := &query.OneOfExpr{Values: values}
 		sql, args, err := oe.ToSql()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "?", sql)
 		// The Values should be a slice of string/number values
 		assert.Contains(t, args[0], "one")
@@ -74,11 +79,14 @@ func TestDirectSqlGeneration(t *testing.T) {
 			Right: right,
 		}
 		sql, args, err := be.ToSql()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Contains(t, sql, "OR")
 		assert.Len(t, args, 2)
 	})
+}
 
+// TestSqlErrorHandling tests error handling in the ToSql methods
+func TestSqlErrorHandling(t *testing.T) {
 	t.Run("BinaryExpr_unknown_operator", func(t *testing.T) {
 		// Test the unknown operator branch
 		// Create a custom type that embeds BooleanOperator but with a value not defined in the enum
@@ -89,7 +97,7 @@ func TestDirectSqlGeneration(t *testing.T) {
 			Right: &query.FieldExpr{},
 		}
 		_, _, err := be.ToSql()
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Contains(t, err.Error(), "unknown operator")
 	})
 
@@ -106,7 +114,7 @@ func TestDirectSqlGeneration(t *testing.T) {
 			Expr: invalidExpr,
 		}
 		_, _, err := ne.ToSql()
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("FieldExpr_unknown_operator", func(t *testing.T) {
@@ -118,7 +126,7 @@ func TestDirectSqlGeneration(t *testing.T) {
 			Value: &query.NumberLiteral{NumberValue: 200},
 		}
 		_, _, err := fe.ToSql()
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Contains(t, err.Error(), "unknown operator")
 	})
 }
