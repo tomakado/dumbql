@@ -78,6 +78,6 @@ func ExampleParse_booleanFields() {
 	}
 
 	fmt.Println(ast)
-	// Output: (and (and (and (= verified true) (= premium true)) (not (= banned true)))
-	//          (or (= admin true) (= moderator true)))
+	//nolint:lll
+	// Output: (and (and (and (= verified true) (= premium true)) (not (= banned true))) (or (= admin true) (= moderator true)))
 }
