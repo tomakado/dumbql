@@ -50,6 +50,15 @@ func (n *NumberLiteral) Match(target any, op FieldOperator) bool {
 	return matchNum(targetFloat, n.NumberValue, op)
 }
 
+func (b *BoolLiteral) Match(target any, op FieldOperator) bool {
+	targetBool, ok := target.(bool)
+	if !ok {
+		return false
+	}
+
+	return matchBool(targetBool, b.BoolValue, op)
+}
+
 // convertToFloat64 converts any numeric type to float64
 func convertToFloat64(v any) (float64, bool) { //nolint:cyclop
 	switch val := v.(type) {
@@ -134,6 +143,17 @@ func matchNum(a, b float64, op FieldOperator) bool {
 		return a < b
 	case LessThanOrEqual:
 		return a <= b
+	default:
+		return false
+	}
+}
+
+func matchBool(a, b bool, op FieldOperator) bool {
+	switch op { //nolint:exhaustive
+	case Equal:
+		return a == b
+	case NotEqual:
+		return a != b
 	default:
 		return false
 	}

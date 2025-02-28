@@ -13,7 +13,7 @@ type person struct {
 	Name     string  `dumbql:"name"`
 	Age      int64   `dumbql:"age"`
 	Height   float64 `dumbql:"height"`
-	IsMember bool
+	IsMember bool    `dumbql:"is_member"`
 }
 
 func TestBinaryExpr_Match(t *testing.T) { //nolint:funlen
@@ -231,6 +231,33 @@ func TestFieldExpr_Match(t *testing.T) { //nolint:funlen
 			want: true,
 		},
 		{
+			name: "boolean equal - match",
+			expr: &query.FieldExpr{
+				Field: "is_member",
+				Op:    query.Equal,
+				Value: &query.BoolLiteral{BoolValue: true},
+			},
+			want: true,
+		},
+		{
+			name: "boolean equal - no match",
+			expr: &query.FieldExpr{
+				Field: "is_member",
+				Op:    query.Equal,
+				Value: &query.BoolLiteral{BoolValue: false},
+			},
+			want: false,
+		},
+		{
+			name: "boolean not equal - match",
+			expr: &query.FieldExpr{
+				Field: "is_member",
+				Op:    query.NotEqual,
+				Value: &query.BoolLiteral{BoolValue: false},
+			},
+			want: true,
+		},
+		{
 			name: "non-existent field",
 			expr: &query.FieldExpr{
 				Field: "invalid",
@@ -240,13 +267,13 @@ func TestFieldExpr_Match(t *testing.T) { //nolint:funlen
 			want: true,
 		},
 		{
-			name: "field without dumbql tag",
+			name: "wrong case field",
 			expr: &query.FieldExpr{
-				Field: "IsMember",
+				Field: "Is_Member", // Wrong case compared to the tag
 				Op:    query.Equal,
-				Value: &query.StringLiteral{StringValue: "true"},
+				Value: &query.BoolLiteral{BoolValue: true},
 			},
-			want: false,
+			want: true, // Non-existent fields return true by default
 		},
 		{
 			name: "type mismatch",
@@ -262,6 +289,87 @@ func TestFieldExpr_Match(t *testing.T) { //nolint:funlen
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			result := test.expr.Match(target, matcher)
+			assert.Equal(t, test.want, result)
+		})
+	}
+}
+
+func TestBoolLiteral_Match(t *testing.T) { //nolint:funlen
+	tests := []struct {
+		name   string
+		bl     *query.BoolLiteral
+		target any
+		op     query.FieldOperator
+		want   bool
+	}{
+		{
+			name:   "true equal true - match",
+			bl:     &query.BoolLiteral{BoolValue: true},
+			target: true,
+			op:     query.Equal,
+			want:   true,
+		},
+		{
+			name:   "false equal false - match",
+			bl:     &query.BoolLiteral{BoolValue: false},
+			target: false,
+			op:     query.Equal,
+			want:   true,
+		},
+		{
+			name:   "true equal false - no match",
+			bl:     &query.BoolLiteral{BoolValue: true},
+			target: false,
+			op:     query.Equal,
+			want:   false,
+		},
+		{
+			name:   "false equal true - no match",
+			bl:     &query.BoolLiteral{BoolValue: false},
+			target: true,
+			op:     query.Equal,
+			want:   false,
+		},
+		{
+			name:   "true not equal false - match",
+			bl:     &query.BoolLiteral{BoolValue: true},
+			target: false,
+			op:     query.NotEqual,
+			want:   true,
+		},
+		{
+			name:   "false not equal true - match",
+			bl:     &query.BoolLiteral{BoolValue: false},
+			target: true,
+			op:     query.NotEqual,
+			want:   true,
+		},
+		{
+			name:   "true not equal true - no match",
+			bl:     &query.BoolLiteral{BoolValue: true},
+			target: true,
+			op:     query.NotEqual,
+			want:   false,
+		},
+		{
+			name:   "with non-bool target",
+			bl:     &query.BoolLiteral{BoolValue: true},
+			target: "true",
+			op:     query.Equal,
+			want:   false,
+		},
+		{
+			name:   "with invalid operator",
+			bl:     &query.BoolLiteral{BoolValue: true},
+			target: true,
+			op:     query.GreaterThan,
+			want:   false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result := test.bl.Match(test.target, test.op)
 			assert.Equal(t, test.want, result)
 		})
 	}
@@ -437,6 +545,42 @@ func TestOneOfExpr_Match(t *testing.T) { //nolint:funlen
 				},
 			},
 			target: "one",
+			op:     query.Equal,
+			want:   true,
+		},
+		{
+			name: "boolean equal - match",
+			expr: &query.OneOfExpr{
+				Values: []query.Valuer{
+					&query.BoolLiteral{BoolValue: true},
+					&query.BoolLiteral{BoolValue: false},
+				},
+			},
+			target: true,
+			op:     query.Equal,
+			want:   true,
+		},
+		{
+			name: "boolean equal - no match",
+			expr: &query.OneOfExpr{
+				Values: []query.Valuer{
+					&query.BoolLiteral{BoolValue: false},
+				},
+			},
+			target: true,
+			op:     query.Equal,
+			want:   false,
+		},
+		{
+			name: "mixed types with boolean",
+			expr: &query.OneOfExpr{
+				Values: []query.Valuer{
+					&query.StringLiteral{StringValue: "one"},
+					&query.NumberLiteral{NumberValue: 2},
+					&query.BoolLiteral{BoolValue: true},
+				},
+			},
+			target: true,
 			op:     query.Equal,
 			want:   true,
 		},
