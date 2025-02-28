@@ -88,6 +88,30 @@ func TestToSql(t *testing.T) { //nolint:funlen
 				"John",
 			},
 		},
+		{
+			// Boolean true value
+			input:    "is_active:true",
+			want:     "SELECT * FROM dummy_table WHERE is_active = ?",
+			wantArgs: []any{true},
+		},
+		{
+			// Boolean false value
+			input:    "is_deleted:false",
+			want:     "SELECT * FROM dummy_table WHERE is_deleted = ?",
+			wantArgs: []any{false},
+		},
+		{
+			// Boolean with not equals
+			input:    "is_enabled!=false",
+			want:     "SELECT * FROM dummy_table WHERE is_enabled <> ?",
+			wantArgs: []any{false},
+		},
+		{
+			// Boolean shorthand syntax
+			input:    "is_active",
+			want:     "SELECT * FROM dummy_table WHERE is_active = ?",
+			wantArgs: []any{true},
+		},
 	}
 
 	for _, test := range tests {

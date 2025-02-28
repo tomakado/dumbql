@@ -97,6 +97,51 @@ func TestParser(t *testing.T) { //nolint:funlen
 			input: "not (status:200)",
 			want:  "(not (= status 200))",
 		},
+		// Boolean true.
+		{
+			input: "enabled:true",
+			want:  "(= enabled true)",
+		},
+		// Boolean false.
+		{
+			input: "enabled:false",
+			want:  "(= enabled false)",
+		},
+		// Boolean with not equals operator.
+		{
+			input: "enabled!=false",
+			want:  "(!= enabled false)",
+		},
+		// Complex query with boolean.
+		{
+			input: "status:200 and enabled:true",
+			want:  "(and (= status 200) (= enabled true))",
+		},
+		// Boolean field shorthand syntax.
+		{
+			input: "enabled",
+			want:  "(= enabled true)",
+		},
+		// Multiple boolean field shorthand syntax.
+		{
+			input: "enabled and verified",
+			want:  "(and (= enabled true) (= verified true))",
+		},
+		// Boolean field shorthand syntax with other expressions.
+		{
+			input: "enabled and status:200",
+			want:  "(and (= enabled true) (= status 200))",
+		},
+		// Boolean field shorthand with NOT.
+		{
+			input: "not enabled",
+			want:  "(not (= enabled true))",
+		},
+		// Complex query with boolean shorthand.
+		{
+			input: "verified and (status:200 or not enabled)",
+			want:  "(and (= verified true) (or (= status 200) (not (= enabled true))))",
+		},
 	}
 
 	for _, test := range tests {

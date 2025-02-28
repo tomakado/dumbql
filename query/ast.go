@@ -75,6 +75,13 @@ func (n *NumberLiteral) String() string {
 }
 func (n *NumberLiteral) Value() any { return n.NumberValue }
 
+type BoolLiteral struct {
+	BoolValue bool
+}
+
+func (b *BoolLiteral) String() string { return strconv.FormatBool(b.BoolValue) }
+func (b *BoolLiteral) Value() any     { return b.BoolValue }
+
 type Identifier string
 
 func (i Identifier) Value() any     { return string(i) }

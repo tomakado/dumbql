@@ -9,14 +9,14 @@ import (
 )
 
 func ExampleParse() {
-	const q = `profile.age >= 18 and profile.city = Barcelona`
+	const q = `profile.age >= 18 and profile.city = Barcelona and profile.verified = true`
 	ast, err := dumbql.Parse(q)
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println(ast)
-	// Output: (and (>= profile.age 18) (= profile.city "Barcelona"))
+	// Output: (and (and (>= profile.age 18) (= profile.city "Barcelona")) (= profile.verified true))
 }
 
 func ExampleQuery_Validate() {
@@ -27,6 +27,7 @@ func ExampleQuery_Validate() {
 		),
 		"period_months": schema.Max(int64(3)),
 		"title":         schema.LenInRange(1, 100),
+		"active":        schema.Is[bool](),
 	}
 
 	// The following query is invalid against the schema:
@@ -34,7 +35,7 @@ func ExampleQuery_Validate() {
 	// 	- field `name` is not described in the schema
 	//
 	// Invalid parts of the query are dropped.
-	const q = `status:pending and period_months:4 and (title:"hello world" or name:"John Doe")`
+	const q = `status:pending and period_months:4 and active:true and (title:"hello world" or name:"John Doe")`
 	expr, err := dumbql.Parse(q)
 	if err != nil {
 		panic(err)
@@ -43,12 +44,12 @@ func ExampleQuery_Validate() {
 	validated, err := expr.Validate(schm)
 	fmt.Println(validated)
 	fmt.Println(err)
-	// Output: (and (= status "pending") (= title "hello world"))
+	// Output: (and (and (= status "pending") (= active true)) (= title "hello world"))
 	// field "period_months": value must be equal or less than 3, got 4; field "name" not found in schema
 }
 
 func ExampleQuery_ToSql() {
-	const q = `status:pending and period_months < 4 and (title:"hello world" or name:"John Doe")`
+	const q = `status:pending and period_months < 4 and is_active:true and (title:"hello world" or name:"John Doe")`
 	expr, err := dumbql.Parse(q)
 	if err != nil {
 		panic(err)
@@ -64,6 +65,19 @@ func ExampleQuery_ToSql() {
 
 	fmt.Println(sql)
 	fmt.Println(args)
-	// Output: SELECT * FROM users WHERE ((status = ? AND period_months < ?) AND (title = ? OR name = ?))
-	// [pending 4 hello world John Doe]
+	// nolint:lll
+	// Output: SELECT * FROM users WHERE (((status = ? AND period_months < ?) AND is_active = ?) AND (title = ? OR name = ?))
+	// [pending 4 true hello world John Doe]
+}
+
+func ExampleParse_booleanFields() {
+	const q = `verified and premium and not banned and (admin or moderator)`
+	ast, err := dumbql.Parse(q)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(ast)
+	//nolint:lll
+	// Output: (and (and (and (= verified true) (= premium true)) (not (= banned true))) (or (= admin true) (= moderator true)))
 }

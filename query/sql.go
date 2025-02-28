@@ -6,6 +6,26 @@ import (
 	sq "github.com/Masterminds/squirrel"
 )
 
+func (s *StringLiteral) ToSql() (string, []any, error) { //nolint:revive
+	return "?", []any{s.StringValue}, nil
+}
+
+func (n *NumberLiteral) ToSql() (string, []any, error) { //nolint:revive
+	return "?", []any{n.NumberValue}, nil
+}
+
+func (b *BoolLiteral) ToSql() (string, []any, error) { //nolint:revive
+	return "?", []any{b.BoolValue}, nil
+}
+
+func (i Identifier) ToSql() (string, []any, error) { //nolint:revive
+	return string(i), nil, nil
+}
+
+func (o *OneOfExpr) ToSql() (string, []any, error) { //nolint:revive
+	return "?", []any{o.Value()}, nil
+}
+
 func (b *BinaryExpr) ToSql() (string, []any, error) { //nolint:revive
 	switch b.Op {
 	case And:

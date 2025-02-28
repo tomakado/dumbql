@@ -9,11 +9,12 @@ AndExpr             <- left:NotExpr rest:(_ ( op:AndOp ) _ NotExpr)*         { r
 AndOp               <- ("AND" / "and")
 NotExpr             <- ("NOT" / "not") _ expr:Primary                        { return &NotExpr{Expr: expr.(Expr)}, nil }
                      / Primary
-Primary             <- ParenExpr / FieldExpr 
+Primary             <- ParenExpr / FieldExpr / BoolFieldExpr
 ParenExpr           <- '(' _ expr:Expr _ ')'                                 { return expr.(Expr), nil }
 FieldExpr           <- field:Identifier _ op:CmpOp _ value:Value             { return parseFieldExpression(field, op, value) }
-Value               <- OneOfExpr / String / Number / Identifier
-OneOfValue          <- String / Number / Identifier
+BoolFieldExpr       <- field:Identifier                                      { return parseBoolFieldExpr(field) }
+Value               <- OneOfExpr / String / Number / Boolean / Identifier
+OneOfValue          <- String / Number / Boolean / Identifier
 Identifier          <- AlphaNumeric ("." AlphaNumeric)*                      { return Identifier(c.text), nil }
 AlphaNumeric        <- [a-zA-Z_][a-zA-Z0-9_]*
 Integer             <- '0' / NonZeroDecimalDigit DecimalDigit*
@@ -27,6 +28,7 @@ EscapeSequence      <- SingleCharEscape / UnicodeEscape
 SingleCharEscape    <- ["\\/bfnrt]
 UnicodeEscape       <- 'u' HexDigit HexDigit HexDigit HexDigit
 HexDigit            <- [0-9a-f]i
+Boolean             <- ("true" / "false")                                    { return parseBool(c) }
 CmpOp               <- ( ">=" / ">" / "<=" / "<" / "!:" / "!=" / ":" / "=" / "~" )
 OneOfExpr           <- '[' _ values:(OneOfValues)? _ ']'                     { return parseOneOfExpression(values) }
 OneOfValues         <- head:OneOfValue tail:(_ ',' _ OneOfValue)*            { return parseOneOfValues(head, tail) }

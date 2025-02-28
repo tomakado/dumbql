@@ -110,6 +110,15 @@ func parseString(c *current) (any, error) {
 	return &StringLiteral{StringValue: val}, nil
 }
 
+func parseBool(c *current) (any, error) {
+	val := string(c.text)
+	boolVal, err := strconv.ParseBool(val)
+	if err != nil {
+		return nil, fmt.Errorf("invalid boolean literal: %q", val)
+	}
+	return &BoolLiteral{BoolValue: boolVal}, nil
+}
+
 func parseOneOfExpression(values any) (any, error) {
 	if values == nil || len(values.([]Valuer)) == 0 {
 		return &OneOfExpr{Values: nil}, nil
@@ -128,4 +137,15 @@ func parseOneOfValues(head, tail any) (any, error) {
 	}
 
 	return vals, nil
+}
+
+// parseBoolFieldExpr handles the shorthand syntax for boolean fields
+// where a field name alone is interpreted as field = true
+func parseBoolFieldExpr(field any) (any, error) {
+	// Create a FieldExpr with Equal operator and true value
+	return &FieldExpr{
+		Field: field.(Identifier),
+		Op:    Equal,
+		Value: &BoolLiteral{BoolValue: true},
+	}, nil
 }

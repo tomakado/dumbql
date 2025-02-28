@@ -9,7 +9,7 @@ type RuleFunc func(field Field, value any) error
 type Schema map[Field]RuleFunc
 
 type ValueType interface {
-	string | Numeric
+	string | Numeric | bool
 }
 
 type Numeric interface {
