@@ -31,3 +31,33 @@ func TestLiteralValues(t *testing.T) {
 		assert.Equal(t, "field", id.Value())
 	})
 }
+
+// Test String methods for operators
+func TestOperatorString(t *testing.T) {
+	t.Run("BooleanOperator.String", func(t *testing.T) {
+		// Test valid operators
+		assert.Equal(t, "and", query.And.String())
+		assert.Equal(t, "or", query.Or.String())
+		
+		// Test invalid operator (default case)
+		type CustomBoolOp query.BooleanOperator
+		invalidOp := query.BooleanOperator(CustomBoolOp(255)) // Invalid operator (max uint8)
+		assert.Equal(t, "unknown!", invalidOp.String())
+	})
+
+	t.Run("FieldOperator.String", func(t *testing.T) {
+		// Test all valid operators
+		assert.Equal(t, "=", query.Equal.String())
+		assert.Equal(t, "!=", query.NotEqual.String())
+		assert.Equal(t, ">", query.GreaterThan.String())
+		assert.Equal(t, ">=", query.GreaterThanOrEqual.String())
+		assert.Equal(t, "<", query.LessThan.String())
+		assert.Equal(t, "<=", query.LessThanOrEqual.String())
+		assert.Equal(t, "~", query.Like.String())
+		
+		// Test invalid operator (default case)
+		type CustomFieldOp query.FieldOperator
+		invalidOp := query.FieldOperator(CustomFieldOp(255)) // Invalid operator (max uint8)
+		assert.Equal(t, "unknown!", invalidOp.String())
+	})
+}
