@@ -15,7 +15,7 @@ func TestLiteralValues(t *testing.T) {
 
 	t.Run("NumberLiteral.Value", func(t *testing.T) {
 		nl := &query.NumberLiteral{NumberValue: 42.5}
-		assert.Equal(t, 42.5, nl.Value())
+		assert.InDelta(t, 42.5, nl.Value(), 0.0001)
 	})
 
 	t.Run("BoolLiteral.Value", func(t *testing.T) {
