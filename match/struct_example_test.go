@@ -52,15 +52,15 @@ func ExampleStructMatcher_MatchField_complexMatching() {
 	}
 
 	type UserWithAddress struct {
-		ID        int64   `dumbql:"id"`
-		Name      string  `dumbql:"name"`
-		Age       int64   `dumbql:"age"`
-		Score     float64 `dumbql:"score"`
-		Location  string  `dumbql:"location"`
-		Role      string  `dumbql:"role"`
-		Verified  bool    `dumbql:"verified"`
-		Premium   bool    `dumbql:"premium"`
-		Address   Address `dumbql:"address"`
+		ID       int64   `dumbql:"id"`
+		Name     string  `dumbql:"name"`
+		Age      int64   `dumbql:"age"`
+		Score    float64 `dumbql:"score"`
+		Location string  `dumbql:"location"`
+		Role     string  `dumbql:"role"`
+		Verified bool    `dumbql:"verified"`
+		Premium  bool    `dumbql:"premium"`
+		Address  Address `dumbql:"address"`
 	}
 
 	user := &UserWithAddress{
