@@ -83,9 +83,14 @@ func Example() {
 		}
 	}
 
-	fmt.Println(filtered)
+	// Print each match on a separate line to avoid long line warnings
+	for i, u := range filtered {
+		fmt.Printf("Match %d: %v\n", i+1, u)
+	}
 	// Output:
-	// [{1 John Doe 30 4.5 New York admin true true} {2 Jane Smith 25 3.8 Los Angeles user true false} {3 Bob Johnson 35 4.2 Chicago user false false}]
+	// Match 1: {1 John Doe 30 4.5 New York admin true true}
+	// Match 2: {2 Jane Smith 25 3.8 Los Angeles user true false}
+	// Match 3: {3 Bob Johnson 35 4.2 Chicago user false false}
 }
 
 func Example_booleanFields() {
@@ -137,7 +142,11 @@ func Example_booleanFields() {
 		}
 	}
 
-	fmt.Println(filtered)
+	// Print each match on a separate line to avoid long line warnings
+	for i, u := range filtered {
+		fmt.Printf("Match %d: %v\n", i+1, u)
+	}
 	// Output:
-	// [{1 John Doe 30 4.5 New York admin true true} {2 Jane Smith 25 3.8 Los Angeles user true false}]
+	// Match 1: {1 John Doe 30 4.5 New York admin true true}
+	// Match 2: {2 Jane Smith 25 3.8 Los Angeles user true false}
 }
