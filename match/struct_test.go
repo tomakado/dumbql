@@ -223,7 +223,7 @@ func TestStructMatcher_MatchNot(t *testing.T) {
 
 func TestStructMatcher_MatchField(t *testing.T) { //nolint:funlen
 	matcher := &match.StructMatcher{}
-	
+
 	// Create null manager for Jane to test nil pointer traversal
 	managerContact := contact{
 		Email: "manager@example.com",
@@ -236,15 +236,15 @@ func TestStructMatcher_MatchField(t *testing.T) { //nolint:funlen
 		Contact: managerContact,
 		// Manager is nil
 	}
-	
+
 	// Create Bob as emergency contact
 	emergencyContact := &person{
-		Name:    "Bob",
-		Age:     35,
-		Height:  1.80,
-		Hidden:  "sensitive data", // Test field with dumbql:"-" tag
+		Name:   "Bob",
+		Age:    35,
+		Height: 1.80,
+		Hidden: "sensitive data", // Test field with dumbql:"-" tag
 	}
-	
+
 	// Create John's contact info
 	johnContact := contact{
 		Email:     "john@example.com",
@@ -257,7 +257,7 @@ func TestStructMatcher_MatchField(t *testing.T) { //nolint:funlen
 			Zip:     "12345",
 		},
 	}
-	
+
 	// Create the main test target
 	target := person{
 		Name:     "John",
