@@ -44,7 +44,26 @@ func ExampleStructMatcher_MatchField_simpleMatching() {
 }
 
 func ExampleStructMatcher_MatchField_complexMatching() {
-	user := &User{
+	type Address struct {
+		Street  string `dumbql:"street"`
+		City    string `dumbql:"city"`
+		Country string `dumbql:"country"`
+		Zip     string `dumbql:"zip"`
+	}
+
+	type UserWithAddress struct {
+		ID       int64   `dumbql:"id"`
+		Name     string  `dumbql:"name"`
+		Age      int64   `dumbql:"age"`
+		Score    float64 `dumbql:"score"`
+		Location string  `dumbql:"location"`
+		Role     string  `dumbql:"role"`
+		Verified bool    `dumbql:"verified"`
+		Premium  bool    `dumbql:"premium"`
+		Address  Address `dumbql:"address"`
+	}
+
+	user := &UserWithAddress{
 		ID:       1,
 		Name:     "John Doe",
 		Age:      30,
@@ -53,10 +72,17 @@ func ExampleStructMatcher_MatchField_complexMatching() {
 		Role:     "admin",
 		Verified: true,
 		Premium:  false,
+		Address: Address{
+			Street:  "123 Main St",
+			City:    "New York",
+			Country: "USA",
+			Zip:     "10001",
+		},
 	}
 
-	// Parse a complex query with multiple conditions
-	q := `age >= 25 and location:["New York", "Los Angeles"] and score > 4.0`
+	// Parse a complex query with multiple conditions including nested field traversal
+	// This demonstrates the nested field access capability using dot notation
+	q := `age >= 25 and address.city:"New York" and score > 4.0`
 	ast, _ := query.Parse("test", []byte(q))
 	expr := ast.(query.Expr)
 
@@ -65,7 +91,7 @@ func ExampleStructMatcher_MatchField_complexMatching() {
 	result := expr.Match(user, matcher)
 
 	fmt.Printf("%s: %v\n", q, result)
-	// Output: age >= 25 and location:["New York", "Los Angeles"] and score > 4.0: true
+	// Output: age >= 25 and address.city:"New York" and score > 4.0: true
 }
 
 func ExampleStructMatcher_MatchField_numericComparisons() {

@@ -1,2 +1,15 @@
+coverage:
+  status:
+    project:
+      default:
+        # basic
+        target: 85%    # the required coverage value
+        threshold: 5%  # the leniency in hitting the target
+    patch:
+      default:
+        # basic
+        target: 80%
+        threshold: 5%
+
 ignore:
   - "query/parser.gen.go"
