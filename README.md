@@ -12,6 +12,7 @@ Simple (dumb?) query language and parser for Go.
 - Field expressions (`age >= 18`, `field.name:"field value"`, etc.)
 - Boolean expressions (`age >= 18 and city = Barcelona`, `occupation = designer or occupation = "ux analyst"`)
 - One-of/In expressions (`occupation = [designer, "ux analyst"]`)
+- Boolean fields support with shorthand syntax (`is_active`, `verified and premium`)
 - Schema validation
 - Drop-in usage with [squirrel](https://github.com/Masterminds/squirrel) or SQL drivers directly
 - Struct matching with `dumbql` struct tag
@@ -206,7 +207,7 @@ This section is a non-formal description of DumbQL syntax. For strict descriptio
 
 ### Field expression
 
-Field name & value pair divided by operator. Field name is any alphanumeric identifier (with underscore), value can be string, int64 or floa64.
+Field name & value pair divided by operator. Field name is any alphanumeric identifier (with underscore), value can be string, int64, float64, or bool.
 One-of expression is also supported (see below).
 
 ```
@@ -217,16 +218,17 @@ for example
 
 ```
 period_months < 4
+is_active:true
 ```
 
 ### Field expression operators
 
-| Operator             | Meaning                       | Supported types              |
-|----------------------|-------------------------------|------------------------------|
-| `:` or `=`           | Equal, one of                 | `int64`, `float64`, `string` |
-| `!=` or `!:`         | Not equal                     | `int64`, `float64`, `string` |
-| `~`                  | “Like” or “contains” operator | `string`                     |
-| `>`, `>=`, `<`, `<=` | Comparison                    | `int64`, `float64`           |
+| Operator             | Meaning                       | Supported types                      |
+|----------------------|-------------------------------|--------------------------------------|
+| `:` or `=`           | Equal, one of                 | `int64`, `float64`, `string`, `bool` |
+| `!=` or `!:`         | Not equal                     | `int64`, `float64`, `string`, `bool` |
+| `~`                  | "Like" or "contains" operator | `string`                             |
+| `>`, `>=`, `<`, `<=` | Comparison                    | `int64`, `float64`                   |
 
 
 ### Boolean operators
@@ -237,7 +239,18 @@ Multiple field expression can be combined into boolean expressions with `and` (`
 status:pending and period_months < 4 and (title:"hello world" or name:"John Doe")
 ```
 
-### “One of” expression
+### Boolean Field Shorthand
+
+Boolean fields can be expressed in a simpler shorthand syntax:
+
+```
+verified                  # equivalent to verified:true
+verified and premium      # equivalent to verified:true and premium:true  
+not verified              # equivalent to not (verified:true)
+verified or admin         # equivalent to verified:true or admin:true
+```
+
+### "One of" expression
 
 Sometimes instead of multiple `and`/`or` clauses against the same field:
 
@@ -258,3 +271,13 @@ If number does not have digits after `.` it's treated as integer and stored as `
 ### Strings
 
 String is a sequence of Unicode characters surrounded by double quotes (`"`). In some cases like single word it's possible to write string value without double quotes.
+
+### Booleans
+
+Boolean values are represented by `true` or `false` literals and can be used with the equality operators (`=`, `:`, `!=`, `!:`).
+
+```
+is_active:true
+verified = true
+is_banned != false
+```

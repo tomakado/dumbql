@@ -18,8 +18,17 @@
 - Documentation: Document public APIs with complete sentences
 - Structure: Keep packages focused on specific functionality
 - Imports: Group standard library, external, and internal packages
+- Complexity: Keep functions small and focused, avoid deep nesting
+- In general, follow Go's best practices and idioms and the project's existing style
 
 ## Project Structure
 - /query - Query parsing, validation, and SQL generation
 - /match - Struct matching functionality
 - /schema - Schema definition and validation rules
+
+## Workflow Instructions
+- When it's said that we're fixing the issue, request this issue with gh-cli and its comments to get the context
+- Write tests before writing code
+- After changes and before committing, run `task lint` and `task test`. If any of these fail, fix the issues before proceeding
+- After creating PR, wait for CI/CD to pass
+- Then check if test coverage decreased. If it did, add or modify tests to keep at least the same coverage
