@@ -27,6 +27,7 @@ type person struct {
 	Age      int64   `dumbql:"age"`
 	Height   float64 `dumbql:"height"`
 	IsMember bool
+	Hidden   string  `dumbql:"-"`
 	Contact  contact `dumbql:"contact"`
 	Manager  *person `dumbql:"manager"`
 }
@@ -364,6 +365,27 @@ func TestStructMatcher_MatchField(t *testing.T) { //nolint:funlen
 			value: &query.StringLiteral{StringValue: "test"},
 			op:    query.Equal,
 			want:  false,
+		},
+		{
+			name:  "nil pointer in path",
+			field: "manager.manager.name", // manager.manager is nil
+			value: &query.StringLiteral{StringValue: "test"},
+			op:    query.Equal,
+			want:  true, // Should match when hitting nil pointer
+		},
+		{
+			name:  "skipped field with dumbql tag",
+			field: "contact.emergency.hidden.field", // hidden is tagged with dumbql:"-"
+			value: &query.StringLiteral{StringValue: "test"},
+			op:    query.Equal,
+			want:  true, // Should match when encountering skipped field
+		},
+		{
+			name:  "non-existent field in path",
+			field: "contact.nonexistent.field",
+			value: &query.StringLiteral{StringValue: "test"},
+			op:    query.Equal,
+			want:  true, // Should match when field not found
 		},
 	}
 
