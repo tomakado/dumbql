@@ -80,7 +80,8 @@ func ExampleStructMatcher_MatchField_complexMatching() {
 		},
 	}
 
-	// Parse a complex query with multiple conditions including nested field
+	// Parse a complex query with multiple conditions including nested field traversal
+	// This demonstrates the nested field access capability using dot notation
 	q := `age >= 25 and address.city:"New York" and score > 4.0`
 	ast, _ := query.Parse("test", []byte(q))
 	expr := ast.(query.Expr)

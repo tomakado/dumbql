@@ -223,6 +223,8 @@ func TestStructMatcher_MatchNot(t *testing.T) {
 
 func TestStructMatcher_MatchField(t *testing.T) { //nolint:funlen
 	matcher := &match.StructMatcher{}
+	
+	// Create null manager for Jane to test nil pointer traversal
 	managerContact := contact{
 		Email: "manager@example.com",
 		Phone: "987-654-3210",
@@ -232,12 +234,18 @@ func TestStructMatcher_MatchField(t *testing.T) { //nolint:funlen
 		Age:     40,
 		Height:  1.68,
 		Contact: managerContact,
+		// Manager is nil
 	}
+	
+	// Create Bob as emergency contact
 	emergencyContact := &person{
-		Name:   "Bob",
-		Age:    35,
-		Height: 1.80,
+		Name:    "Bob",
+		Age:     35,
+		Height:  1.80,
+		Hidden:  "sensitive data", // Test field with dumbql:"-" tag
 	}
+	
+	// Create John's contact info
 	johnContact := contact{
 		Email:     "john@example.com",
 		Phone:     "123-456-7890",
@@ -249,11 +257,14 @@ func TestStructMatcher_MatchField(t *testing.T) { //nolint:funlen
 			Zip:     "12345",
 		},
 	}
+	
+	// Create the main test target
 	target := person{
 		Name:     "John",
 		Age:      30,
 		Height:   1.75,
 		IsMember: true,
+		Hidden:   "should be hidden",
 		Contact:  johnContact,
 		Manager:  manager,
 	}
@@ -375,6 +386,13 @@ func TestStructMatcher_MatchField(t *testing.T) { //nolint:funlen
 		},
 		{
 			name:  "skipped field with dumbql tag",
+			field: "hidden.anything", // hidden is tagged with dumbql:"-"
+			value: &query.StringLiteral{StringValue: "test"},
+			op:    query.Equal,
+			want:  true, // Should match when encountering skipped field
+		},
+		{
+			name:  "nested skipped field with dumbql tag",
 			field: "contact.emergency.hidden.field", // hidden is tagged with dumbql:"-"
 			value: &query.StringLiteral{StringValue: "test"},
 			op:    query.Equal,
