@@ -14,6 +14,8 @@ type User struct {
 	Score    float64 `dumbql:"score"`
 	Location string  `dumbql:"location"`
 	Role     string  `dumbql:"role"`
+	Verified bool    `dumbql:"verified"`
+	Premium  bool    `dumbql:"premium"`
 }
 
 func ExampleStructMatcher_MatchField_simpleMatching() {
@@ -24,6 +26,8 @@ func ExampleStructMatcher_MatchField_simpleMatching() {
 		Score:    4.5,
 		Location: "New York",
 		Role:     "admin",
+		Verified: true,
+		Premium:  false,
 	}
 
 	// Parse a simple equality query
@@ -47,6 +51,8 @@ func ExampleStructMatcher_MatchField_complexMatching() {
 		Score:    4.5,
 		Location: "New York",
 		Role:     "admin",
+		Verified: true,
+		Premium:  false,
 	}
 
 	// Parse a complex query with multiple conditions
@@ -70,6 +76,8 @@ func ExampleStructMatcher_MatchField_numericComparisons() {
 		Score:    4.5,
 		Location: "New York",
 		Role:     "admin",
+		Verified: true,
+		Premium:  false,
 	}
 
 	// Test various numeric comparisons
@@ -213,9 +221,14 @@ func ExampleStructMatcher_MatchField_multiMatch() {
 		}
 	}
 
-	fmt.Println(filtered)
+	// Print each match on a separate line to avoid long line warnings
+	for i, u := range filtered {
+		fmt.Printf("Match %d: %v\n", i+1, u)
+	}
 	// Output:
-	// [{1 John Doe 30 4.5 New York admin} {2 Jane Smith 25 3.8 Los Angeles user} {3 Bob Johnson 35 4.2 Chicago user}]
+	// Match 1: {1 John Doe 30 4.5 New York admin false false}
+	// Match 2: {2 Jane Smith 25 3.8 Los Angeles user false false}
+	// Match 3: {3 Bob Johnson 35 4.2 Chicago user false false}
 }
 
 func ExampleStructMatcher_MatchField_oneOfExpression() {
@@ -333,4 +346,53 @@ func ExampleStructMatcher_MatchField_structTagOmit() {
 	// Query 'internal:false' match result: true
 	// Query 'id:1 and password:"wrong_password"' match result: true
 	// Query '(id:1 or score > 4.0) and (password:"wrong" or internal:false)' match result: true
+}
+
+func ExampleStructMatcher_MatchField_booleanFields() {
+	user := &User{
+		ID:       1,
+		Name:     "John Doe",
+		Age:      30,
+		Score:    4.5,
+		Location: "New York",
+		Role:     "admin",
+		Verified: true,
+		Premium:  false,
+	}
+
+	// Test boolean field expressions
+	queries := []string{
+		// Standard boolean comparison
+		`verified:true`,
+		`premium:false`,
+		// Not equal comparison
+		`verified!=false`,
+		`premium!=true`,
+		// Boolean field shorthand syntax
+		`verified`,
+		`not premium`,
+		// Complex expressions with boolean shorthand
+		`verified and not premium`,
+		`verified and role:"admin"`,
+		`verified and (age > 25 or location:"New York")`,
+	}
+
+	matcher := &match.StructMatcher{}
+
+	for _, q := range queries {
+		ast, _ := query.Parse("test", []byte(q))
+		expr := ast.(query.Expr)
+		result := expr.Match(user, matcher)
+		fmt.Printf("Query '%s' match result: %v\n", q, result)
+	}
+	// Output:
+	// Query 'verified:true' match result: true
+	// Query 'premium:false' match result: true
+	// Query 'verified!=false' match result: true
+	// Query 'premium!=true' match result: true
+	// Query 'verified' match result: true
+	// Query 'not premium' match result: true
+	// Query 'verified and not premium' match result: true
+	// Query 'verified and role:"admin"' match result: true
+	// Query 'verified and (age > 25 or location:"New York")' match result: true
 }
