@@ -18,7 +18,7 @@ type MatchUser struct {
 	Premium  bool    `dumbql:"premium"`
 }
 
-// createSampleUsers returns a slice of sample users for examples
+// createSampleUsers returns a slice of sample users for examples.
 func createSampleUsers() []MatchUser {
 	return []MatchUser{
 		{
@@ -85,11 +85,7 @@ func Example() {
 
 	fmt.Println(filtered)
 	// Output:
-	// [
-	//  {1 John Doe 30 4.5 New York admin true true}
-	//  {2 Jane Smith 25 3.8 Los Angeles user true false}
-	//  {3 Bob Johnson 35 4.2 Chicago user false false}
-	// ]
+	// [{1 John Doe 30 4.5 New York admin true true} {2 Jane Smith 25 3.8 Los Angeles user true false} {3 Bob Johnson 35 4.2 Chicago user false false}]
 }
 
 func Example_booleanFields() {
@@ -143,8 +139,5 @@ func Example_booleanFields() {
 
 	fmt.Println(filtered)
 	// Output:
-	// [
-	//  {1 John Doe 30 4.5 New York admin true true}
-	//  {2 Jane Smith 25 3.8 Los Angeles user true false}
-	// ]
+	// [{1 John Doe 30 4.5 New York admin true true} {2 Jane Smith 25 3.8 Los Angeles user true false}]
 }
