@@ -24,38 +24,40 @@ func (m *StructMatcher) MatchNot(target any, expr query.Expr) bool {
 }
 
 // MatchField matches a field in the target struct using the provided value and operator.
-// It supports struct tags using the `dumbql` tag name, which allows you to specify a custom field name.
-// It also supports nested field access using dot notation (e.g., "top_level.second_level.third_level").
+// It supports struct tags using the `dumbql` tag name and nested field access using dot notation.
+// For example: "address.city" to access the city field in the address struct.
 func (m *StructMatcher) MatchField(target any, field string, value query.Valuer, op query.FieldOperator) bool {
-	// Check if this is a nested field access (contains dots)
-	segments := strings.Split(field, ".")
-	if len(segments) == 1 {
-		// Use existing non-nested implementation
-		return m.matchSingleField(target, field, value, op)
+	// Handle dot notation for nested fields
+	parts := strings.Split(field, ".")
+
+	// Process single field name - common case
+	if len(parts) == 1 {
+		return m.matchDirectField(target, field, value, op)
 	}
 
-	// Handle nested field traversal
-	return m.matchNestedField(target, segments, value, op)
+	// Handle nested fields traversal
+	return m.matchNestedField(target, parts, value, op)
 }
 
-// matchSingleField is the implementation for matching a single field
-func (m *StructMatcher) matchSingleField(target any, field string, value query.Valuer, op query.FieldOperator) bool {
-	t := reflect.TypeOf(target)
-
-	if t.Kind() == reflect.Ptr {
-		t = t.Elem()
+// matchDirectField handles matching a direct field (no dots in the name)
+func (m *StructMatcher) matchDirectField(target any, field string, value query.Valuer, op query.FieldOperator) bool {
+	v := reflect.ValueOf(target)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
 	}
 
-	if t.Kind() != reflect.Struct {
+	if v.Kind() != reflect.Struct {
 		return false
 	}
 
+	t := v.Type()
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
 
 		tag := f.Tag.Get("dumbql")
 		if tag == "-" {
-			return true // Field marked with dumbql:"-" always match (in other words does not affect the result)
+			// Field marked with dumbql:"-" always match (in other words does not affect the result)
+			return true
 		}
 
 		fname := f.Name
@@ -64,33 +66,21 @@ func (m *StructMatcher) matchSingleField(target any, field string, value query.V
 		}
 
 		if fname == field {
-			v := reflect.ValueOf(target)
-			if v.Kind() == reflect.Ptr {
-				v = v.Elem()
-			}
-
 			return m.MatchValue(v.Field(i).Interface(), value, op)
 		}
 	}
 
+	// If field not found, return true (same behavior as original)
 	return true
 }
 
-// matchNestedField traverses nested structs to find and match the target field
-func (m *StructMatcher) matchNestedField(
-	target any,
-	segments []string,
-	value query.Valuer,
-	op query.FieldOperator,
-) bool {
-	currentTarget := target
+// matchNestedField handles traversing nested fields using dot notation
+func (m *StructMatcher) matchNestedField(target any, path []string, value query.Valuer, op query.FieldOperator) bool {
+	current := target
 
-	// Traverse the struct hierarchy for all segments except the last one
-	for i := 0; i < len(segments)-1; i++ {
-		currentSegment := segments[i]
-
-		// Find the field in the current struct
-		v := reflect.ValueOf(currentTarget)
+	// Navigate through all segments except the last one
+	for i := 0; i < len(path)-1; i++ {
+		v := reflect.ValueOf(current)
 		if v.Kind() == reflect.Ptr {
 			if v.IsNil() {
 				return true // Nil pointer, can't traverse further
@@ -102,51 +92,37 @@ func (m *StructMatcher) matchNestedField(
 			return false // Not a struct, cannot traverse
 		}
 
-		// Find the field by name or tag
-		field, found := m.findField(v, currentSegment)
+		// Find field by name or tag
+		t := v.Type()
+		found := false
+
+		for j := 0; j < t.NumField(); j++ {
+			f := t.Field(j)
+
+			tag := f.Tag.Get("dumbql")
+			if tag == "-" {
+				return true // Field marked with dumbql:"-" always matches
+			}
+
+			fname := f.Name
+			if tag != "" {
+				fname = tag
+			}
+
+			if fname == path[i] {
+				current = v.Field(j).Interface()
+				found = true
+				break
+			}
+		}
+
 		if !found {
 			return true // Field not found, behave same as current implementation
 		}
-
-		// Move to the next level in the hierarchy
-		if field.Kind() == reflect.Ptr {
-			if field.IsNil() {
-				return true // Nil pointer, can't traverse further
-			}
-			currentTarget = field.Elem().Interface()
-		} else {
-			currentTarget = field.Interface()
-		}
 	}
 
-	// Match the final field
-	lastSegment := segments[len(segments)-1]
-	return m.matchSingleField(currentTarget, lastSegment, value, op)
-}
-
-// findField looks for a field by name or tag in a struct value
-func (m *StructMatcher) findField(v reflect.Value, fieldName string) (reflect.Value, bool) {
-	t := v.Type()
-
-	for i := 0; i < t.NumField(); i++ {
-		f := t.Field(i)
-
-		tag := f.Tag.Get("dumbql")
-		if tag == "-" {
-			continue // Skip fields marked with dumbql:"-"
-		}
-
-		fname := f.Name
-		if tag != "" {
-			fname = tag
-		}
-
-		if fname == fieldName {
-			return v.Field(i), true
-		}
-	}
-
-	return reflect.Value{}, false
+	// Match the final segment
+	return m.matchDirectField(current, path[len(path)-1], value, op)
 }
 
 func (m *StructMatcher) MatchValue(target any, value query.Valuer, op query.FieldOperator) bool {
