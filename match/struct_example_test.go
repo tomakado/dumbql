@@ -223,7 +223,11 @@ func ExampleStructMatcher_MatchField_multiMatch() {
 
 	fmt.Println(filtered)
 	// Output:
-	// [{1 John Doe 30 4.5 New York admin false false} {2 Jane Smith 25 3.8 Los Angeles user false false} {3 Bob Johnson 35 4.2 Chicago user false false}]
+	// [
+	//  {1 John Doe 30 4.5 New York admin false false}
+	//  {2 Jane Smith 25 3.8 Los Angeles user false false}
+	//  {3 Bob Johnson 35 4.2 Chicago user false false}
+	// ]
 }
 
 func ExampleStructMatcher_MatchField_oneOfExpression() {

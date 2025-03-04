@@ -18,8 +18,9 @@ type MatchUser struct {
 	Premium  bool    `dumbql:"premium"`
 }
 
-func Example() {
-	users := []MatchUser{
+// createSampleUsers returns a slice of sample users for examples
+func createSampleUsers() []MatchUser {
+	return []MatchUser{
 		{
 			ID:       1,
 			Name:     "John Doe",
@@ -62,6 +63,11 @@ func Example() {
 			Premium:  true,
 		},
 	}
+}
+
+func Example() {
+	// Define sample users
+	users := createSampleUsers()
 
 	q := `(age >= 30 and score > 4.0) or (location:"Los Angeles" and role:"user")`
 	ast, _ := query.Parse("test", []byte(q))
@@ -79,7 +85,11 @@ func Example() {
 
 	fmt.Println(filtered)
 	// Output:
-	// [{1 John Doe 30 4.5 New York admin true true} {2 Jane Smith 25 3.8 Los Angeles user true false} {3 Bob Johnson 35 4.2 Chicago user false false}]
+	// [
+	//  {1 John Doe 30 4.5 New York admin true true}
+	//  {2 Jane Smith 25 3.8 Los Angeles user true false}
+	//  {3 Bob Johnson 35 4.2 Chicago user false false}
+	// ]
 }
 
 func Example_booleanFields() {
@@ -133,5 +143,8 @@ func Example_booleanFields() {
 
 	fmt.Println(filtered)
 	// Output:
-	// [{1 John Doe 30 4.5 New York admin true true} {2 Jane Smith 25 3.8 Los Angeles user true false}]
+	// [
+	//  {1 John Doe 30 4.5 New York admin true true}
+	//  {2 Jane Smith 25 3.8 Los Angeles user true false}
+	// ]
 }
