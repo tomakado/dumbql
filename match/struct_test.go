@@ -8,11 +8,27 @@ import (
 	"go.tomakado.io/dumbql/query"
 )
 
+type address struct {
+	Street  string `dumbql:"street"`
+	City    string `dumbql:"city"`
+	Country string `dumbql:"country"`
+	Zip     string `dumbql:"zip"`
+}
+
+type contact struct {
+	Email     string  `dumbql:"email"`
+	Phone     string  `dumbql:"phone"`
+	Address   address `dumbql:"address"`
+	Emergency *person `dumbql:"emergency"`
+}
+
 type person struct {
 	Name     string  `dumbql:"name"`
 	Age      int64   `dumbql:"age"`
 	Height   float64 `dumbql:"height"`
 	IsMember bool
+	Contact  contact `dumbql:"contact"`
+	Manager  *person `dumbql:"manager"`
 }
 
 func TestStructMatcher_MatchAnd(t *testing.T) { //nolint:funlen
@@ -204,13 +220,41 @@ func TestStructMatcher_MatchNot(t *testing.T) {
 	}
 }
 
-func TestStructMatcher_MatchField(t *testing.T) {
+func TestStructMatcher_MatchField(t *testing.T) { //nolint:funlen
 	matcher := &match.StructMatcher{}
+	managerContact := contact{
+		Email: "manager@example.com",
+		Phone: "987-654-3210",
+	}
+	manager := &person{
+		Name:    "Jane",
+		Age:     40,
+		Height:  1.68,
+		Contact: managerContact,
+	}
+	emergencyContact := &person{
+		Name:   "Bob",
+		Age:    35,
+		Height: 1.80,
+	}
+	johnContact := contact{
+		Email:     "john@example.com",
+		Phone:     "123-456-7890",
+		Emergency: emergencyContact,
+		Address: address{
+			Street:  "123 Main St",
+			City:    "Anytown",
+			Country: "Countryland",
+			Zip:     "12345",
+		},
+	}
 	target := person{
 		Name:     "John",
 		Age:      30,
 		Height:   1.75,
 		IsMember: true,
+		Contact:  johnContact,
+		Manager:  manager,
 	}
 
 	tests := []struct {
@@ -220,6 +264,7 @@ func TestStructMatcher_MatchField(t *testing.T) {
 		op    query.FieldOperator
 		want  bool
 	}{
+		// Basic field tests
 		{
 			name:  "string equal match",
 			field: "name",
@@ -254,6 +299,71 @@ func TestStructMatcher_MatchField(t *testing.T) {
 			value: &query.StringLiteral{StringValue: "test"},
 			op:    query.Equal,
 			want:  true,
+		},
+
+		// Nested field tests
+		{
+			name:  "one level nesting",
+			field: "contact.email",
+			value: &query.StringLiteral{StringValue: "john@example.com"},
+			op:    query.Equal,
+			want:  true,
+		},
+		{
+			name:  "two level nesting",
+			field: "contact.address.city",
+			value: &query.StringLiteral{StringValue: "Anytown"},
+			op:    query.Equal,
+			want:  true,
+		},
+		{
+			name:  "pointer field access",
+			field: "manager.name",
+			value: &query.StringLiteral{StringValue: "Jane"},
+			op:    query.Equal,
+			want:  true,
+		},
+		{
+			name:  "multiple level with pointer",
+			field: "contact.emergency.age",
+			value: &query.NumberLiteral{NumberValue: 35},
+			op:    query.Equal,
+			want:  true,
+		},
+		{
+			name:  "nested field not equal",
+			field: "contact.address.country",
+			value: &query.StringLiteral{StringValue: "Otherland"},
+			op:    query.NotEqual,
+			want:  true,
+		},
+		{
+			name:  "deep nesting with comparison",
+			field: "manager.contact.email",
+			value: &query.StringLiteral{StringValue: "manager"},
+			op:    query.Like,
+			want:  true,
+		},
+		{
+			name:  "non-existent nested field",
+			field: "contact.nonexistent",
+			value: &query.StringLiteral{StringValue: "test"},
+			op:    query.Equal,
+			want:  true,
+		},
+		{
+			name:  "non-existent deep nested field",
+			field: "contact.address.nonexistent",
+			value: &query.StringLiteral{StringValue: "test"},
+			op:    query.Equal,
+			want:  true,
+		},
+		{
+			name:  "invalid path (non-struct intermediate)",
+			field: "name.something",
+			value: &query.StringLiteral{StringValue: "test"},
+			op:    query.Equal,
+			want:  false,
 		},
 	}
 
