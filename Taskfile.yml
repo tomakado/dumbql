@@ -3,7 +3,7 @@ version: 3
 vars:
   PROJECT_BIN_DIR: "$(pwd)/bin"
 
-  GOLANGCI_LINT_VERSION: "v1.62.0"
+  GOLANGCI_LINT_VERSION: "v1.64.6"
   GOLANGCI_LINT_BIN: "{{ .PROJECT_BIN_DIR }}/golangci-lint"
 
 tasks:
