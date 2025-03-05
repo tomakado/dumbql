@@ -6,6 +6,10 @@ on:
     branches:
       - main
 
+# Default permissions for all jobs
+permissions:
+  contents: read
+
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -34,6 +38,9 @@ jobs:
   tests:
     needs:   setup
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: write  # Required for codecov
     steps:
       - name: checkout
         uses: actions/checkout@v3
