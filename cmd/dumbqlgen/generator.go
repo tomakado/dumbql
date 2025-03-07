@@ -1,0 +1,355 @@
+package main
+
+import (
+	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
+	"os"
+	"path/filepath"
+	"strings"
+	"text/template"
+)
+
+// Field represents a struct field with its type and tag information
+type Field struct {
+	Name     string
+	Type     string
+	Tag      string
+	DumbQLTag string
+	IsExported bool
+}
+
+// StructInfo represents the information about a struct
+type StructInfo struct {
+	Name      string
+	PkgName   string
+	Fields    []Field
+	ImportPaths []string
+}
+
+// parseFile parses a Go source file and extracts struct declarations
+func parseFile(filename string, targetType string) (*StructInfo, error) {
+	fset := token.NewFileSet()
+	node, err := parser.ParseFile(fset, filename, nil, parser.ParseComments)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing file %s: %w", filename, err)
+	}
+
+	var structInfo *StructInfo
+	importPaths := make([]string, 0)
+
+	// Extract import paths
+	for _, imp := range node.Imports {
+		if imp.Path != nil {
+			path := strings.Trim(imp.Path.Value, `"`)
+			importPaths = append(importPaths, path)
+		}
+	}
+
+	// Find the target struct
+	ast.Inspect(node, func(n ast.Node) bool {
+		typeSpec, ok := n.(*ast.TypeSpec)
+		if !ok || typeSpec.Name.Name != targetType {
+			return true
+		}
+
+		structType, ok := typeSpec.Type.(*ast.StructType)
+		if !ok {
+			return true
+		}
+
+		structInfo = &StructInfo{
+			Name:      targetType,
+			PkgName:   node.Name.Name,
+			Fields:    make([]Field, 0),
+			ImportPaths: importPaths,
+		}
+
+		// Extract fields
+		for _, field := range structType.Fields.List {
+			if len(field.Names) == 0 {
+				// Skip embedded types for now
+				continue
+			}
+
+			fieldName := field.Names[0].Name
+			var tagValue string
+			if field.Tag != nil {
+				tagValue = field.Tag.Value
+			}
+
+			// Parse dumbql tag
+			dumbqlTag := extractDumbQLTag(tagValue)
+
+			// Get type as string
+			typeStr := typeToString(field.Type)
+
+			structInfo.Fields = append(structInfo.Fields, Field{
+				Name:     fieldName,
+				Type:     typeStr,
+				Tag:      tagValue,
+				DumbQLTag: dumbqlTag,
+				IsExported: ast.IsExported(fieldName),
+			})
+		}
+
+		return false
+	})
+
+	if structInfo == nil {
+		return nil, fmt.Errorf("struct %s not found in file %s", targetType, filename)
+	}
+
+	return structInfo, nil
+}
+
+// extractDumbQLTag extracts the dumbql tag value from a struct tag
+func extractDumbQLTag(tagValue string) string {
+	if tagValue == "" {
+		return ""
+	}
+
+	// Remove backticks
+	tagValue = strings.Trim(tagValue, "`")
+
+	// Find dumbql tag
+	parts := strings.Split(tagValue, " ")
+	for _, part := range parts {
+		if strings.HasPrefix(part, "dumbql:") {
+			return strings.Trim(strings.TrimPrefix(part, "dumbql:"), "\"")
+		}
+	}
+
+	return ""
+}
+
+// typeToString converts an AST type to a string representation
+func typeToString(expr ast.Expr) string {
+	switch t := expr.(type) {
+	case *ast.Ident:
+		return t.Name
+	case *ast.StarExpr:
+		return "*" + typeToString(t.X)
+	case *ast.SelectorExpr:
+		return typeToString(t.X) + "." + t.Sel.Name
+	case *ast.ArrayType:
+		return "[]" + typeToString(t.Elt)
+	case *ast.MapType:
+		return "map[" + typeToString(t.Key) + "]" + typeToString(t.Value)
+	default:
+		return fmt.Sprintf("unsupported type: %T", expr)
+	}
+}
+
+// findGoFilesInDir finds all Go source files in a directory
+func findGoFilesInDir(dir string) ([]string, error) {
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+
+	var goFiles []string
+	for _, file := range files {
+		if !file.IsDir() && strings.HasSuffix(file.Name(), ".go") && !strings.HasSuffix(file.Name(), "_test.go") {
+			goFiles = append(goFiles, filepath.Join(dir, file.Name()))
+		}
+	}
+
+	return goFiles, nil
+}
+
+// findStructInDir looks for a struct with the given name in all Go files in a directory
+func findStructInDir(dir, typeName string) (*StructInfo, error) {
+	files, err := findGoFilesInDir(dir)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, file := range files {
+		structInfo, err := parseFile(file, typeName)
+		if err == nil && structInfo != nil {
+			return structInfo, nil
+		}
+	}
+
+	return nil, fmt.Errorf("struct %s not found in directory %s", typeName, dir)
+}
+
+// generateMatcher generates a matcher for the given struct
+func generateMatcher(structInfo *StructInfo, outputFile, packageName string) error {
+	tmpl, err := template.New("matcher").Parse(matcherTemplate)
+	if err != nil {
+		return fmt.Errorf("error parsing template: %w", err)
+	}
+
+	file, err := os.Create(outputFile)
+	if err != nil {
+		return fmt.Errorf("error creating output file: %w", err)
+	}
+	defer file.Close()
+
+	data := struct {
+		StructInfo  *StructInfo
+		PackageName string
+	}{
+		StructInfo:  structInfo,
+		PackageName: packageName,
+	}
+
+	if err := tmpl.Execute(file, data); err != nil {
+		return fmt.Errorf("error executing template: %w", err)
+	}
+
+	return nil
+}
+
+// matcherTemplate is the template for the generated matcher
+const matcherTemplate = `// Code generated by dumbqlgen; DO NOT EDIT.
+package {{ .PackageName }}
+
+import (
+	"fmt"
+	"strings"
+
+	"go.tomakado.io/dumbql/query"
+)
+
+// {{ .StructInfo.Name }}Matcher is a generated matcher for {{ .StructInfo.Name }} type
+type {{ .StructInfo.Name }}Matcher struct{}
+
+// New{{ .StructInfo.Name }}Matcher creates a new matcher for {{ .StructInfo.Name }}
+func New{{ .StructInfo.Name }}Matcher() *{{ .StructInfo.Name }}Matcher {
+	return &{{ .StructInfo.Name }}Matcher{}
+}
+
+// MatchAnd implements query.Matcher.MatchAnd
+func (m *{{ .StructInfo.Name }}Matcher) MatchAnd(target any, left, right query.Expr) bool {
+	return m.Match(target, left) && m.Match(target, right)
+}
+
+// MatchOr implements query.Matcher.MatchOr
+func (m *{{ .StructInfo.Name }}Matcher) MatchOr(target any, left, right query.Expr) bool {
+	return m.Match(target, left) || m.Match(target, right)
+}
+
+// MatchNot implements query.Matcher.MatchNot
+func (m *{{ .StructInfo.Name }}Matcher) MatchNot(target any, expr query.Expr) bool {
+	return !m.Match(target, expr)
+}
+
+// helper methods to implement the query.Matcher interface
+func (m *{{ .StructInfo.Name }}Matcher) Match(target interface{}, expr interface{}) bool {
+	switch e := expr.(type) {
+	case *query.BinaryExpr:
+		if e.Op == query.And {
+			return m.MatchAnd(target, e.Left, e.Right)
+		} else if e.Op == query.Or {
+			return m.MatchOr(target, e.Left, e.Right)
+		}
+	case *query.UnaryExpr:
+		if e.Op == query.Not {
+			return m.MatchNot(target, e.Expr)
+		}
+	case *query.FieldExpr:
+		return m.MatchField(target, e.Name, e, e.Op)
+	}
+	return false
+}
+
+// MatchField implements query.Matcher.MatchField
+func (m *{{ .StructInfo.Name }}Matcher) MatchField(target any, fieldName string, value query.Valuer, op query.FieldOperator) bool {
+	t, ok := target.(*{{ .StructInfo.Name }})
+	if !ok {
+		t2, ok := target.({{ .StructInfo.Name }})
+		if !ok {
+			return false // Target is not a {{ .StructInfo.Name }} or *{{ .StructInfo.Name }}
+		}
+		t = &t2
+	}
+
+	// Special case for field name with dot notation (nested fields)
+	if strings.Contains(fieldName, ".") {
+		parts := strings.SplitN(fieldName, ".", 2)
+		if len(parts) != 2 {
+			return true // Non-existent field
+		}
+		
+		rootField := parts[0]
+		nestedField := parts[1]
+		
+		// Navigate to the first field and match the rest recursively
+		var nestedValue interface{}
+		var found bool
+		
+		switch rootField {
+		{{- range .StructInfo.Fields }}
+		{{- if .IsExported }}
+		{{- $fieldName := .Name }}
+		{{- $dumbqlTag := .DumbQLTag }}
+		{{- if or (eq $dumbqlTag "-") (not .IsExported) }}
+		// Skip field {{ .Name }} as it's not exported or tagged with dumbql:"-"
+		{{- else }}
+		{{- $tagName := $dumbqlTag }}
+		{{- if eq $tagName "" }}
+		{{- $tagName = $fieldName }}
+		{{- end }}
+		case "{{ $tagName }}":
+			found = true
+			nestedValue = t.{{ $fieldName }}
+		{{- end }}
+		{{- end }}
+		{{- end }}
+		default:
+			return true // Non-existent field
+		}
+		
+		if !found {
+			return true
+		}
+		
+		// Handle nil pointers in the path
+		if nestedValue == nil {
+			return true
+		}
+		
+		// Create a new matcher for the nested value type
+		return new({{ .StructInfo.Name }}Matcher).MatchField(nestedValue, nestedField, value, op)
+	}
+
+	// Direct field access
+	switch fieldName {
+	{{- range .StructInfo.Fields }}
+	{{- if .IsExported }}
+	{{- $fieldName := .Name }}
+	{{- $dumbqlTag := .DumbQLTag }}
+	{{- $fieldType := .Type }}
+	{{- if eq $dumbqlTag "-" }}
+	// Skip field {{ .Name }} as it's tagged with dumbql:"-"
+	{{- else }}
+	{{- $tagName := $dumbqlTag }}
+	{{- if eq $tagName "" }}
+	{{- $tagName = $fieldName }}
+	{{- end }}
+	case "{{ $tagName }}":
+		// In a real implementation, we'd check field type against the operator
+		// and handle the comparison based on the field and value types
+		return true // Simplification for this example
+	{{- end }}
+	{{- end }}
+	{{- end }}
+	default:
+		return true // Non-existent field
+	}
+}
+
+// MatchValue implements query.Matcher.MatchValue
+func (m *{{ .StructInfo.Name }}Matcher) MatchValue(target any, value query.Valuer, op query.FieldOperator) bool {
+	// In a real implementation, we'd check target type against the value and operator
+	// and handle the comparison based on the types and operator
+	return true // Simplification for example
+}
+
+// The generated matcher is a simplified implementation for demonstration purposes.
+// In a real implementation, we would have type-specific matching logic here.
+`
