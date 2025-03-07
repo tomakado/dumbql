@@ -16,6 +16,7 @@ Simple (dumb?) query language and parser for Go.
 - Schema validation
 - Drop-in usage with [squirrel](https://github.com/Masterminds/squirrel) or SQL drivers directly
 - Struct matching with `dumbql` struct tag
+- Code-generated matchers for improved performance
 
 ## Examples
 
@@ -200,6 +201,65 @@ func main() {
 ```
 
 See [match_example_test.go](match_example_test.go) for more examples.
+
+### Using code-generated matchers
+
+DumbQL includes a code generator tool that can create type-specific matchers for improved performance compared to the reflection-based matcher.
+
+```bash
+# Install the generator tool
+go install go.tomakado.io/dumbql/cmd/dumbqlgen@latest
+
+# Generate a matcher for your type
+dumbqlgen -type User -dir path/to/package -output user_matcher_gen.go
+
+# Use the generated matcher
+```
+
+Example usage of a generated matcher:
+
+```go
+package main
+
+import (
+  "fmt"
+
+  "go.tomakado.io/dumbql"
+  "go.tomakado.io/dumbql/match"
+  "go.tomakado.io/dumbql/query"
+  
+  // Import package with your generated matcher
+  "your/package/path"
+)
+
+func main() {
+  users := []path.User{
+    // ... user data
+  }
+
+  q := `age >= 30 and score > 4.0`
+  expr, _ := query.Parse("test", []byte(q))
+  
+  // Register the generated matcher
+  match.RegisterGeneratedMatcher("User", path.NewUserMatcher())
+  
+  filtered := make([]path.User, 0)
+  
+  for _, user := range users {
+    // Create matcher with factory, using the generated matcher
+    matcher, _ := match.CreateMatcher(user, match.MatcherTypeGenerated)
+    
+    result, _ := matcher.Match(user, expr)
+    if result {
+      filtered = append(filtered, user)
+    }
+  }
+  
+  fmt.Println(filtered)
+}
+```
+
+See [generated_example_test.go](match/generated_example_test.go) for more examples.
 
 ## Query syntax
 
