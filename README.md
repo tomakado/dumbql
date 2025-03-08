@@ -211,9 +211,7 @@ DumbQL includes a code generator tool that can create type-specific matchers for
 go install go.tomakado.io/dumbql/cmd/dumbqlgen@latest
 
 # Generate a matcher for your type
-dumbqlgen -type User -dir path/to/package -output user_matcher_gen.go
-
-# Use the generated matcher
+dumbqlgen -type User -dir path/to/package -output user_matcher.gen.go
 ```
 
 Example usage of a generated matcher:
@@ -224,8 +222,6 @@ package main
 import (
   "fmt"
 
-  "go.tomakado.io/dumbql"
-  "go.tomakado.io/dumbql/match"
   "go.tomakado.io/dumbql/query"
   
   // Import package with your generated matcher
@@ -240,17 +236,14 @@ func main() {
   q := `age >= 30 and score > 4.0`
   expr, _ := query.Parse("test", []byte(q))
   
-  // Register the generated matcher
-  match.RegisterGeneratedMatcher("User", path.NewUserMatcher())
+  // Create matcher using the generated constructor
+  matcher := path.NewUserMatcher()
   
   filtered := make([]path.User, 0)
   
   for _, user := range users {
-    // Create matcher with factory, using the generated matcher
-    matcher, _ := match.CreateMatcher(user, match.MatcherTypeGenerated)
-    
-    result, _ := matcher.Match(user, expr)
-    if result {
+    // Use the matcher directly
+    if matcher.MatchAnd(user, expr.Left, expr.Right) {
       filtered = append(filtered, user)
     }
   }
@@ -258,8 +251,6 @@ func main() {
   fmt.Println(filtered)
 }
 ```
-
-See [generated_example_test.go](match/generated_example_test.go) for more examples.
 
 ## Query syntax
 

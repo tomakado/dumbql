@@ -16,7 +16,7 @@ func main() {
 	)
 
 	flag.StringVar(&typeName, "type", "", "Type name to generate matcher for (required)")
-	flag.StringVar(&outputFile, "output", "", "Output file name (default: {type}_matcher_gen.go)")
+	flag.StringVar(&outputFile, "output", "", "Output file name (default: {type}_matcher.gen.go)")
 	flag.StringVar(&pkgName, "pkg", "", "Package name for the generated code (default: current directory name)")
 	flag.StringVar(&dir, "dir", ".", "Directory to search for the type definition")
 	flag.Parse()
@@ -28,7 +28,7 @@ func main() {
 	}
 
 	if outputFile == "" {
-		outputFile = fmt.Sprintf("%s_matcher_gen.go", typeName)
+		outputFile = fmt.Sprintf("%s_matcher.gen.go", typeName)
 	}
 
 	// Resolve absolute path for directory
