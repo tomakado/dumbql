@@ -2,7 +2,6 @@
 package {{ .PackageName }}
 
 import (
-	"fmt"
 	"strings"
 
 	"go.tomakado.io/dumbql/query"
@@ -40,10 +39,8 @@ func (m *{{ .StructInfo.Name }}Matcher) Match(target interface{}, expr interface
 		} else if e.Op == query.Or {
 			return m.MatchOr(target, e.Left, e.Right)
 		}
-	case *query.UnaryExpr:
-		if e.Op == query.Not {
-			return m.MatchNot(target, e.Expr)
-		}
+	case *query.NotExpr:
+		return m.MatchNot(target, e.Expr)
 	case *query.FieldExpr:
 		return m.MatchField(target, e.Name, e, e.Op)
 	}

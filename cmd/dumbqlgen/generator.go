@@ -6,6 +6,7 @@ import (
 	"go/parser"
 	"go/token"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -201,7 +202,19 @@ func generateMatcher(structInfo *StructInfo, outputFile, packageName string) err
 		return fmt.Errorf("error executing template: %w", err)
 	}
 
+	// Format the generated file with goimports
+	// We use the "go fmt" command for simplicity
+	if err := formatGeneratedFile(outputFile); err != nil {
+		return fmt.Errorf("error formatting generated file: %w", err)
+	}
+
 	return nil
+}
+
+// formatGeneratedFile formats the generated file using go fmt
+func formatGeneratedFile(filePath string) error {
+	cmd := exec.Command("go", "fmt", filePath)
+	return cmd.Run()
 }
 
 // See template.go for the matcher template
