@@ -1,7 +1,7 @@
 version: 3
 
 vars:
-  PROJECT_BIN_DIR: "$(pwd)/bin"
+  PROJECT_BIN_DIR: "../bin"
 
   GOLANGCI_LINT_VERSION: "v1.64.6"
   GOLANGCI_LINT_BIN: "{{ .PROJECT_BIN_DIR }}/golangci-lint"
@@ -28,26 +28,18 @@ tasks:
           {{ .GOLANGCI_LINT_BIN }} run --fix ./...
 
   # Test
-  lib-test:
-    desc: "Run unit tests"
+  test:
+    desc: "Run tests"
     cmds:
       - go test ./... -coverprofile=coverage.out
-      - cat coverage.out | grep -v "query/parser.gen.go" > coverage_filtered.out
-      - go tool cover -func=coverage_filtered.out
+      - go tool cover -func=coverage.out
     
-  cmd-test:
-    desc: "Run tests"
-    dir: cmd/dumbqlgen
-    cmds:
-      - go test ./...
-
-  cmd-bench:
+  bench:
     desc: "Run benchmarks"
-    dir: cmd/dumbqlgen
-    cmd: go test -bench=. -benchmem 
+    cmd: go test -bench=. -benchmem ./...
 
   # Codegen
   generate:
     desc: "Run code generators"
     cmd: go generate ./...
-
+    

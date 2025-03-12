@@ -2,8 +2,15 @@ package match
 
 import (
 	"reflect"
-	"strings"
 )
+
+// For high-performance applications, consider using the code generator
+// (cmd/dumbqlgen) to create a type-specific Router implementation instead
+// of using ReflectRouter. The generated router avoids reflection at runtime,
+// providing better performance, especially in hot paths.
+//
+// Example usage:
+// //go:generate dumbqlgen -type User -package .
 
 // ReflectRouter implements Router for struct targets.
 // It supports struct tags using the `dumbql` tag name and nested field access using dot notation.
@@ -12,30 +19,36 @@ type ReflectRouter struct{}
 // Route resolves a field path in the target struct and returns the value.
 // It supports nested field access using dot notation (e.g., "address.city").
 func (r *ReflectRouter) Route(target any, field string) (any, error) {
-	// Handle dot notation for nested fields
-	parts := strings.Split(field, ".")
+	var (
+		cursor = target
+		err    error
+	)
 
-	// Process single field name - common case
-	if len(parts) == 1 {
-		return r.resolveDirectField(target, field)
+	for field := range Path(field) {
+		if field == "" {
+			return nil, ErrFieldNotFound
+		}
+
+		cursor, err = r.resolveField(cursor, field)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	// Handle nested fields traversal
-	return r.resolveNestedField(target, parts)
+	return cursor, nil
 }
 
-// resolveDirectField handles resolving a direct field (no dots in the name)
-func (r *ReflectRouter) resolveDirectField(target any, field string) (any, error) {
+func (r *ReflectRouter) resolveField(target any, field string) (any, error) {
 	v := reflect.ValueOf(target)
 	if v.Kind() == reflect.Ptr {
 		if v.IsNil() {
-			return nil, errNotAStruct // Nil pointer, can't resolve field
+			return nil, ErrNotAStruct // Nil pointer, can't resolve field
 		}
 		v = v.Elem()
 	}
 
 	if v.Kind() != reflect.Struct {
-		return nil, errNotAStruct // Not a struct, can't resolve field
+		return nil, ErrNotAStruct // Not a struct, can't resolve field
 	}
 
 	t := v.Type()
@@ -45,7 +58,7 @@ func (r *ReflectRouter) resolveDirectField(target any, field string) (any, error
 		tag := f.Tag.Get("dumbql")
 		if tag == "-" {
 			// Field marked with dumbql:"-" is skipped
-			return nil, errFieldNotFound
+			return nil, ErrFieldNotFound
 		}
 
 		fname := f.Name
@@ -59,56 +72,5 @@ func (r *ReflectRouter) resolveDirectField(target any, field string) (any, error
 	}
 
 	// Field not found
-	return nil, errFieldNotFound
-}
-
-// resolveNestedField handles traversing nested fields using dot notation
-func (r *ReflectRouter) resolveNestedField(target any, path []string) (any, error) {
-	current := target
-
-	// Navigate through all segments except the last one
-	for i := range len(path) - 1 {
-		v := reflect.ValueOf(current)
-		if v.Kind() == reflect.Ptr {
-			if v.IsNil() {
-				return nil, errNotAStruct // Nil pointer, can't traverse further
-			}
-			v = v.Elem()
-		}
-
-		if v.Kind() != reflect.Struct {
-			return nil, errNotAStruct // Not a struct, cannot traverse
-		}
-
-		// Find field by name or tag
-		t := v.Type()
-		found := false
-
-		for j := range t.NumField() {
-			f := t.Field(j)
-
-			tag := f.Tag.Get("dumbql")
-			if tag == "-" {
-				return nil, errFieldNotFound // Field marked with dumbql:"-" is skipped
-			}
-
-			fname := f.Name
-			if tag != "" {
-				fname = tag
-			}
-
-			if fname == path[i] {
-				current = v.Field(j).Interface()
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			return nil, errFieldNotFound // Field not found
-		}
-	}
-
-	// Resolve the final segment
-	return r.resolveDirectField(current, path[len(path)-1])
+	return nil, ErrFieldNotFound
 }
