@@ -58,11 +58,16 @@ jobs:
                 ~/go/pkg/mod
           key:  ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
 
-      - name: unit-tests
+      - name: library-tests
         run:  |
               go test ./... -coverprofile=$GITHUB_WORKSPACE/coverage.out
               cat $GITHUB_WORKSPACE/coverage.out | grep -v "query/parser.gen.go" | grep -v "query/ast.go:81" > $GITHUB_WORKSPACE/coverage_filtered.out 
               go tool cover -func=$GITHUB_WORKSPACE/coverage_filtered.out
+
+      - name: dumbqlgen-tests
+        run:  |
+              cd cmd/dumbqlgen
+              go test ./...
 
       - name: codecov
         uses: codecov/codecov-action@v5
