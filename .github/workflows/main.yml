@@ -61,7 +61,7 @@ jobs:
               exit 1
             fi
 
-  generate:
+  go-generate:
     needs: setup
     runs-on: ubuntu-latest
     steps:
