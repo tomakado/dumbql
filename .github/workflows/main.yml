@@ -89,7 +89,7 @@ jobs:
           fi
 
   tests:
-    needs:   [go-modules, generate]
+    needs:   [go-modules, go-generate]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -129,7 +129,7 @@ jobs:
           files: $GITHUB_WORKSPACE/coverage_filtered.out
 
   analysis:
-    needs:   [go-modules, generate]
+    needs:   [go-modules, go-generate]
     runs-on: ubuntu-latest
     steps:
       - name: checkout
