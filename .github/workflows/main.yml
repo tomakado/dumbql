@@ -34,9 +34,62 @@ jobs:
           key:          ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
                         ${{ runner.os }}-go-
+  go-modules:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: setup-go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: check-go-mod-tidy
+        run: |
+            # Store the current state before running go mod tidy
+            git diff --quiet HEAD || { echo "Working directory is not clean. Commit or stash your changes first."; exit 1; }
+            
+            # Run go mod tidy
+            go mod tidy
+            
+            # Check if there are any changes after running go mod tidy
+            if ! git diff --quiet; then
+              echo "::error::go mod tidy produced changes that are not committed. Please run 'go mod tidy' locally and commit the changes."
+              git diff --name-only
+              exit 1
+            fi
+
+  generate:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: setup-go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: check-go-generate
+        run: |
+          # Store the current state before running go generate
+          git diff --quiet HEAD || { echo "Working directory is not clean. Commit or stash your changes first."; exit 1; }
+          
+          # Run go generate
+          go generate ./...
+          
+          # Check if there are any changes after running go generate
+          if ! git diff --quiet; then
+            echo "::error::go generate produced changes that are not committed. Please run 'go generate' locally and commit the changes."
+            git diff --name-only
+            exit 1
+          fi
 
   tests:
-    needs:   setup
+    needs:   [go-modules, generate]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -76,7 +129,7 @@ jobs:
           files: $GITHUB_WORKSPACE/coverage_filtered.out
 
   analysis:
-    needs:   setup
+    needs:   [go-modules, generate]
     runs-on: ubuntu-latest
     steps:
       - name: checkout
