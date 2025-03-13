@@ -177,12 +177,13 @@ jobs:
         env:
           CGO_ENABLED: 0
         run:  |
+              mdkir -p bin
               cd cmd/dumbqlgen
-              go build -o $GITHUB_WORKSPACE/bin/dumbqlgen .
-              $GITHUB_WORKSPACE/bin/dumbqlgen --version
+              go build -o ../../bin/dumbqlgen .
+              ../../bin/dumbqlgen --version
       
       - name: archive-build-artifact
         uses: actions/upload-artifact@v4
         with:
           name: dumbqlgen
-          path: $GITHUB_WORKSPACE/bin/dumbqlgen
+          path: bin/dumbqlgen
