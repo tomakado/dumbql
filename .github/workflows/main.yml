@@ -97,12 +97,7 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
-
-      - name: setup-go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.24'
-
+      
       - name: restore-cache
         uses: actions/cache@v4
         with:
@@ -110,6 +105,11 @@ jobs:
                 ~/.cache/go-build
                 ~/go/pkg/mod
           key:  ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - name: setup-go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
 
       - name: library-tests
         run:  |
@@ -135,11 +135,6 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
 
-      - name: setup-go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.24'
-
       - name: restore-cache
         uses: actions/cache@v4
         with:
@@ -147,6 +142,11 @@ jobs:
                 ~/.cache/go-build
                 ~/go/pkg/mod
           key:  ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - name: setup-go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
@@ -160,11 +160,6 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
 
-      - name: setup-go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.24'
-
       - name: restore-cache
         uses: actions/cache@v4
         with:
@@ -172,6 +167,11 @@ jobs:
                 ~/.cache/go-build
                 ~/go/pkg/mod
           key:  ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - name: setup-go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
 
       - name: build
         env:
