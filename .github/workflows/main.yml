@@ -177,7 +177,7 @@ jobs:
         env:
           CGO_ENABLED: 0
         run:  |
-              mdkir -p bin
+              mkdir -p bin
               cd cmd/dumbqlgen
               go build -o ../../bin/dumbqlgen .
               ../../bin/dumbqlgen --version
