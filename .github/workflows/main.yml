@@ -180,3 +180,9 @@ jobs:
               cd cmd/dumbqlgen
               go build -o $GITHUB_WORKSPACE/bin/dumbqlgen .
               $GITHUB_WORKSPACE/bin/dumbqlgen --version
+      
+      - name: archive-build-artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: dumbqlgen
+          path: $GITHUB_WORKSPACE/bin/dumbqlgen
