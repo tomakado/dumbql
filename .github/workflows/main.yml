@@ -152,3 +152,31 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.62.0
+
+  build:
+    needs: [tests, analysis]
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: setup-go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: restore-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+                ~/.cache/go-build
+                ~/go/pkg/mod
+          key:  ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - name: build
+        env:
+          CGO_ENABLED: 0
+        run:  |
+              cd cmd/dumbqlgen
+              go build -o $GITHUB_WORKSPACE/bin/dumbqlgen .
+              $GITHUB_WORKSPACE/bin/dumbqlgen --version

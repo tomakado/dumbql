@@ -9,6 +9,7 @@ import (
 	"go/ast"
 	"go/types"
 	"os"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"text/template"
@@ -64,8 +65,7 @@ func main() {
 	}
 
 	if config.PrintVersion {
-		fmt.Println("dumbqlgen version 1.0.0")
-		return
+		printVersion()
 	}
 
 	if config.StructType == "" {
@@ -86,6 +86,39 @@ func main() {
 	if err != nil {
 		handleError(fmt.Errorf("write output file: %w", err))
 	}
+}
+
+func printVersion() {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		fmt.Println("dumbql unknown version")
+		return
+	}
+
+	fmt.Printf("dumbql %s\n", info.Main.Version)
+	fmt.Printf("commit: %s at %s\n", getCommitHash(info), getCommitTime(info))
+	fmt.Printf("go version: %s\n", info.GoVersion)
+	os.Exit(0)
+}
+
+func getCommitHash(info *debug.BuildInfo) string {
+	for _, setting := range info.Settings {
+		if setting.Key == "vcs.revision" {
+			return setting.Value
+		}
+	}
+
+	return "(commit unknown)"
+}
+
+func getCommitTime(info *debug.BuildInfo) string {
+	for _, setting := range info.Settings {
+		if setting.Key == "vcs.time" {
+			return setting.Value
+		}
+	}
+
+	return "(build time unknown)"
 }
 
 func handleError(err error) {
@@ -119,11 +152,16 @@ func generate(config Config) (string, error) {
 		return "", fmt.Errorf("failed to parse template: %w", err)
 	}
 
+	buildInfo, ok := debug.ReadBuildInfo()
+	if !ok {
+		return "", errors.New("failed to read build info")
+	}
+
 	var buf bytes.Buffer
 	err = tmpl.ExecuteTemplate(&buf, "router.tmpl", map[string]any{
 		"Package":    packageName,
 		"StructInfo": structInfo,
-		"Version":    "1.0.0",
+		"Version":    buildInfo.Main.Version,
 	})
 	if err != nil {
 		return "", fmt.Errorf("failed to execute template: %w", err)
@@ -170,7 +208,7 @@ func findStruct(pkg *packages.Package, structName string) (StructInfo, error) {
 	structType = st
 
 	// Extract field information
-	for i := 0; i < structType.NumFields(); i++ {
+	for i := range structType.NumFields() {
 		field := structType.Field(i)
 		if !field.Exported() {
 			continue

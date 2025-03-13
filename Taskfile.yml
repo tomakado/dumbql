@@ -51,3 +51,10 @@ tasks:
     desc: "Run code generators"
     cmd: go generate ./...
 
+  # Build
+  cmd-build:
+    desc: "Build dumbqlgen"
+    dir: cmd/dumbqlgen
+    env:
+      CGO_ENABLED: 0
+    cmd: go build -o ../../bin/dumbqlgen .
