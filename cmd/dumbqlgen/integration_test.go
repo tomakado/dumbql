@@ -80,9 +80,7 @@ func TestGeneratedMatcherWorks(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			q, err := dumbql.Parse(tc.query)
-			if err != nil {
-				t.Fatalf("Failed to parse query %q: %v", tc.query, err)
-			}
+			require.NoError(t, err)
 
 			got := q.Match(&user, matcher)
 			require.Equal(t, tc.want, got)

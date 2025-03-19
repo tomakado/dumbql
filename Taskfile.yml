@@ -32,14 +32,14 @@ tasks:
     desc: "Run unit tests"
     cmds:
       - go test ./... -coverprofile=coverage.out
-      - cat coverage.out | grep -v "query/parser.gen.go" > coverage_filtered.out
+      - cat coverage.out | grep -v "query/parser.gen.go" | grep -v "cmd/*" > coverage_filtered.out
       - go tool cover -func=coverage_filtered.out
     
   cmd-test:
     desc: "Run tests"
     dir: cmd/dumbqlgen
     cmds:
-      - go test ./...
+      - go test ./... 
 
   cmd-bench:
     desc: "Run benchmarks"
