@@ -40,11 +40,25 @@ tasks:
     dir: cmd/dumbqlgen
     cmds:
       - go test ./... 
+      
+  test:
+    desc: "Run tests"
+    dir: cmd/dumbqlgen
+    deps:
+      - lib-test
+      - cmd-test
 
   cmd-bench:
     desc: "Run benchmarks"
     dir: cmd/dumbqlgen
     cmd: go test -bench=. -benchmem 
+    
+  # Checks
+  check:
+    desc: "Run checks"
+    deps:
+      - lint
+      - test
 
   # Codegen
   generate:

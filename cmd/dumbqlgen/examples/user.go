@@ -10,12 +10,12 @@ import (
 
 // User is a sample struct to demonstrate the code generator
 type User struct {
-	ID        int64  `dumbql:"id"`
-	Name      string `dumbql:"name"`
-	Email     string `dumbql:"email"`
+	ID        int64  `json:"id" dumbql:"id"`
+	Name      string `json:"name" dumbql:"name"`
+	Email     string `dumbql:"email" json:"email"`
 	CreatedAt time.Time
-	Address   Address `dumbql:"address"`
-	Private   bool    `dumbql:"-"` // Skip this field
+	Address   Address `json:"address"  dumbql:"address"`
+	Private   bool    `json:"private" dumbql:"-"` // Skip this field
 }
 
 // Address is a nested struct

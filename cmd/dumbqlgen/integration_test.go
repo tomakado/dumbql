@@ -19,19 +19,8 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestGeneratedMatcherWorks(t *testing.T) {
-	user := testdata.TestUser{
-		ID:        123,
-		Name:      "John Doe",
-		Email:     "john@example.com",
-		CreatedAt: time.Now(),
-		Address: testdata.Address{
-			Street: "123 Main St",
-			City:   "Anytown",
-			State:  "CA",
-			Zip:    "12345",
-		},
-	}
+func TestGeneratedMatcher(t *testing.T) {
+	user := getTestUser()
 
 	tests := []struct {
 		name  string
@@ -85,5 +74,20 @@ func TestGeneratedMatcherWorks(t *testing.T) {
 			got := q.Match(&user, matcher)
 			require.Equal(t, tc.want, got)
 		})
+	}
+}
+
+func getTestUser() testdata.TestUser {
+	return testdata.TestUser{
+		ID:        123,
+		Name:      "John Doe",
+		Email:     "john@example.com",
+		CreatedAt: time.Now(),
+		Address: testdata.Address{
+			Street: "123 Main St",
+			City:   "Anytown",
+			State:  "CA",
+			Zip:    "12345",
+		},
 	}
 }

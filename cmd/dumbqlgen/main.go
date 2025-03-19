@@ -49,7 +49,7 @@ func main() {
 		fmt.Fprintln(os.Stderr)
 		fmt.Fprintln(os.Stderr, "Flags:")
 		flag.PrintDefaults()
-		os.Exit(2)
+		os.Exit(2) //nolint:mnd
 	}
 
 	var config Config
@@ -74,7 +74,7 @@ func main() {
 
 	// If output is not specified, use the current directory with structtype_matcher.gen.go
 	if config.Output == "" {
-		config.Output = fmt.Sprintf("%s_matcher.gen.go", strings.ToLower(config.StructType))
+		config.Output = strings.ToLower(config.StructType) + "_matcher.gen.go"
 	}
 
 	code, err := generate(config)
@@ -82,7 +82,7 @@ func main() {
 		handleError(fmt.Errorf("generate router: %w", err))
 	}
 
-	err = os.WriteFile(config.Output, []byte(code), 0644)
+	err = os.WriteFile(config.Output, []byte(code), 0o600) //nolint:mnd
 	if err != nil {
 		handleError(fmt.Errorf("write output file: %w", err))
 	}
@@ -223,88 +223,76 @@ func findStruct(pkg *packages.Package, structName string) (StructInfo, error) {
 		fieldInfo.TagName = fieldName // Default to field name
 		fieldInfo.Type = fieldType
 
-		// Find the AST node for the struct to get the tags
-		for _, file := range pkg.Syntax {
-			ast.Inspect(file, func(n ast.Node) bool {
-				typeSpec, ok := n.(*ast.TypeSpec)
-				if !ok || typeSpec.Name.Name != structName {
-					return true
-				}
-
-				structType, ok := typeSpec.Type.(*ast.StructType)
-				if !ok {
-					return false
-				}
-
-				// Loop through fields to find the current field
-				for _, field := range structType.Fields.List {
-					for _, ident := range field.Names {
-						if ident.Name == fieldName {
-							if field.Tag != nil {
-								tag := strings.Trim(field.Tag.Value, "`")
-								dumbqlTag := extractTag(tag, "dumbql")
-								if dumbqlTag == "-" {
-									fieldInfo.Skip = true
-								} else if dumbqlTag != "" {
-									fieldInfo.TagName = dumbqlTag
-								}
-							}
-							break
-						}
-					}
-				}
-
-				return false
-			})
-		}
-
+		findAndEnrichNode(pkg.Syntax, structName, fieldName, &fieldInfo)
 		structInfo.Fields = append(structInfo.Fields, fieldInfo)
 	}
 
 	return structInfo, nil
 }
 
-func extractTag(tag, key string) string {
-	for tag != "" {
-		// Skip leading space.
-		i := 0
-		for i < len(tag) && tag[i] == ' ' {
-			i++
-		}
-		tag = tag[i:]
-		if tag == "" {
-			break
-		}
-
-		// Scan to colon. A space, a quote or a control character is a syntax error.
-		i = 0
-		for i < len(tag) && tag[i] != ' ' && tag[i] != ':' && tag[i] > 0x20 {
-			i++
-		}
-		if i == 0 || i+1 >= len(tag) || tag[i] != ':' || tag[i+1] != '"' {
-			break
-		}
-		name := tag[:i]
-		tag = tag[i+1:]
-
-		// Scan quoted string to find value.
-		i = 1
-		for i < len(tag) && tag[i] != '"' {
-			if tag[i] == '\\' {
-				i++
+func findAndEnrichNode(files []*ast.File, structName, fieldName string, fieldInfo *FieldInfo) {
+	for _, file := range files {
+		ast.Inspect(file, func(n ast.Node) bool {
+			typeSpec, ok := n.(*ast.TypeSpec)
+			if !ok || typeSpec.Name.Name != structName {
+				return true
 			}
-			i++
-		}
-		if i >= len(tag) {
-			break
-		}
-		qvalue := tag[:i+1]
-		tag = tag[i+1:]
 
-		if key == name {
-			value, _ := strconv.Unquote(qvalue)
-			return value
+			structType, ok := typeSpec.Type.(*ast.StructType)
+			if !ok {
+				return false
+			}
+
+			if err := enrichFieldInfo(structType, fieldName, fieldInfo); err != nil {
+				panic(err)
+			}
+
+			return false
+		})
+	}
+}
+
+func enrichFieldInfo(structType *ast.StructType, fieldName string, fieldInfo *FieldInfo) error {
+	for _, field := range structType.Fields.List {
+		for _, ident := range field.Names {
+			if ident.Name != fieldName {
+				continue
+			}
+
+			if field.Tag == nil {
+				continue
+			}
+
+			tag := strings.Trim(field.Tag.Value, "`")
+			dumbqlTag, err := extractTag(tag, "dumbql")
+			if err != nil {
+				return err
+			}
+
+			if dumbqlTag == "-" {
+				fieldInfo.Skip = true
+				break
+			}
+
+			fieldInfo.TagName = dumbqlTag
+
+			break
 		}
 	}
-	return ""
+
+	return nil
+}
+
+func extractTag(tag, key string) (string, error) {
+	if tag == "" {
+		return "", nil
+	}
+
+	for part := range strings.SplitSeq(tag, " ") {
+		if tagKey, tagValue, found := strings.Cut(part, ":"); found && tagKey == key {
+			return strconv.Unquote(tagValue)
+		}
+	}
+
+	return "", nil
 }
