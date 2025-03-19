@@ -52,7 +52,7 @@ func (m *StructMatcher) MatchField(target any, field string, value query.Valuer,
 
 	fieldValue, err := m.router.Route(target, field)
 	if err != nil {
-		return errors.Is(err, errFieldNotFound)
+		return errors.Is(err, ErrFieldNotFound)
 	}
 	return m.MatchValue(fieldValue, value, op)
 }

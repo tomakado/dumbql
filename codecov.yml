@@ -12,4 +12,6 @@ coverage:
         threshold: 5%
 
 ignore:
-  - "query/parser.gen.go"
+  - "**/*.gen.go"
+  - "cmd/dumbqlgen/examples"
+  - "cmd/dumbqlgen/main.go"

@@ -28,14 +28,47 @@ tasks:
           {{ .GOLANGCI_LINT_BIN }} run --fix ./...
 
   # Test
-  test:
+  lib-test:
     desc: "Run unit tests"
     cmds:
       - go test ./... -coverprofile=coverage.out
-      - cat coverage.out | grep -v "query/parser.gen.go" > coverage_filtered.out
+      - cat coverage.out | grep -v "query/parser.gen.go" | grep -v "cmd/*" > coverage_filtered.out
       - go tool cover -func=coverage_filtered.out
+    
+  cmd-test:
+    desc: "Run tests"
+    dir: cmd/dumbqlgen
+    cmds:
+      - go test ./... 
+      
+  test:
+    desc: "Run tests"
+    dir: cmd/dumbqlgen
+    deps:
+      - lib-test
+      - cmd-test
+
+  cmd-bench:
+    desc: "Run benchmarks"
+    dir: cmd/dumbqlgen
+    cmd: go test -bench=. -benchmem 
+    
+  # Checks
+  check:
+    desc: "Run checks"
+    deps:
+      - lint
+      - test
 
   # Codegen
   generate:
     desc: "Run code generators"
     cmd: go generate ./...
+
+  # Build
+  cmd-build:
+    desc: "Build dumbqlgen"
+    dir: cmd/dumbqlgen
+    env:
+      CGO_ENABLED: 0
+    cmd: go build -o ../../bin/dumbqlgen .

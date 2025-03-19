@@ -20,7 +20,7 @@ jobs:
       - name: setup-go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version: '1.24'
 
       - name: go-mod-download
         run:  go mod download
@@ -34,13 +34,9 @@ jobs:
           key:          ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
                         ${{ runner.os }}-go-
-
-  tests:
-    needs:   setup
+  go-modules:
+    needs: setup
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      statuses: write  # Required for codecov
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -48,8 +44,60 @@ jobs:
       - name: setup-go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version: '1.24'
 
+      - name: check-go-mod-tidy
+        run: |
+            # Store the current state before running go mod tidy
+            git diff --quiet HEAD || { echo "Working directory is not clean. Commit or stash your changes first."; exit 1; }
+            
+            # Run go mod tidy
+            go mod tidy
+            
+            # Check if there are any changes after running go mod tidy
+            if ! git diff --quiet; then
+              echo "::error::go mod tidy produced changes that are not committed. Please run 'go mod tidy' locally and commit the changes."
+              git diff --name-only
+              exit 1
+            fi
+
+  go-generate:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: setup-go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: check-go-generate
+        run: |
+          # Store the current state before running go generate
+          git diff --quiet HEAD || { echo "Working directory is not clean. Commit or stash your changes first."; exit 1; }
+          
+          # Run go generate
+          go generate ./...
+          
+          # Check if there are any changes after running go generate
+          if ! git diff --quiet; then
+            echo "::error::go generate produced changes that are not committed. Please run 'go generate' locally and commit the changes."
+            git diff --name-only
+            exit 1
+          fi
+
+  tests:
+    needs:   [go-modules, go-generate]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: write  # Required for codecov
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      
       - name: restore-cache
         uses: actions/cache@v4
         with:
@@ -58,11 +106,21 @@ jobs:
                 ~/go/pkg/mod
           key:  ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
 
-      - name: unit-tests
+      - name: setup-go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: library-tests
         run:  |
               go test ./... -coverprofile=$GITHUB_WORKSPACE/coverage.out
               cat $GITHUB_WORKSPACE/coverage.out | grep -v "query/parser.gen.go" | grep -v "query/ast.go:81" > $GITHUB_WORKSPACE/coverage_filtered.out 
               go tool cover -func=$GITHUB_WORKSPACE/coverage_filtered.out
+
+      - name: dumbqlgen-tests
+        run:  |
+              cd cmd/dumbqlgen
+              go test ./...
 
       - name: codecov
         uses: codecov/codecov-action@v5
@@ -71,16 +129,11 @@ jobs:
           files: $GITHUB_WORKSPACE/coverage_filtered.out
 
   analysis:
-    needs:   setup
+    needs:   [go-modules, go-generate]
     runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v3
-
-      - name: setup-go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.23'
 
       - name: restore-cache
         uses: actions/cache@v4
@@ -90,7 +143,47 @@ jobs:
                 ~/go/pkg/mod
           key:  ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
 
+      - name: setup-go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.62.0
+          version: v1.64.6
+
+  build:
+    needs: [tests, analysis]
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: restore-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+                ~/.cache/go-build
+                ~/go/pkg/mod
+          key:  ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - name: setup-go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: build
+        env:
+          CGO_ENABLED: 0
+        run:  |
+              mkdir -p bin
+              cd cmd/dumbqlgen
+              go build -o ../../bin/dumbqlgen .
+              ../../bin/dumbqlgen --version
+      
+      - name: archive-build-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dumbqlgen
+          path: bin/dumbqlgen
