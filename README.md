@@ -16,6 +16,8 @@ Simple (dumb?) query language and parser for Go.
 - Schema validation
 - Drop-in usage with [squirrel](https://github.com/Masterminds/squirrel) or SQL drivers directly
 - Struct matching with `dumbql` struct tag
+    - Via reflection (slow but works out of box)
+    - Via [code generation](./cmd/dumbqlgen/README.md)
 
 ## Examples
 
