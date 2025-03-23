@@ -181,11 +181,11 @@ func main() {
   }
 
   q := `(age >= 30 and score > 4.0) or (location:"Los Angeles" and role:"user")`
-  ast, _ := query.Parse("test", []byte(q))
-  expr := ast.(query.Expr)
-
+  ast, err := dumbql.Parse(q)
+  if err != nil {
+    panic(err)
+  }
   matcher := &match.StructMatcher{}
-
   filtered := make([]User, 0, len(users))
 
   for _, user := range users {
