@@ -131,6 +131,7 @@ const (
 	LessThan
 	LessThanOrEqual
 	Like
+	Exists
 )
 
 func (c FieldOperator) String() string {
@@ -149,6 +150,8 @@ func (c FieldOperator) String() string {
 		return "<="
 	case Like:
 		return "~"
+	case Exists:
+		return "exists"
 	default:
 		return "unknown!"
 	}

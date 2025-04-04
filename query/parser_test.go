@@ -142,6 +142,41 @@ func TestParser(t *testing.T) { //nolint:funlen
 			input: "verified and (status:200 or not enabled)",
 			want:  "(and (= verified true) (or (= status 200) (not (= enabled true))))",
 		},
+		// Field presence operator with ? syntax
+		{
+			input: "name?",
+			want:  "(exists name true)",
+		},
+		// Field presence operator with 'exists' keyword
+		{
+			input: "name exists",
+			want:  "(exists name true)",
+		},
+		// Field presence operator with 'EXISTS' keyword (uppercase)
+		{
+			input: "name EXISTS",
+			want:  "(exists name true)",
+		},
+		// Field presence with AND
+		{
+			input: "name? and age:30",
+			want:  "(and (exists name true) (= age 30))",
+		},
+		// Field presence with OR
+		{
+			input: "name? or verified",
+			want:  "(or (exists name true) (= verified true))",
+		},
+		// Negated field presence
+		{
+			input: "not name?",
+			want:  "(not (exists name true))",
+		},
+		// Complex expression with field presence
+		{
+			input: "name? and (age>20 or verified)",
+			want:  "(and (exists name true) (or (> age 20) (= verified true)))",
+		},
 	}
 
 	for _, test := range tests {
