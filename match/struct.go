@@ -2,6 +2,7 @@ package match
 
 import (
 	"errors"
+	"reflect"
 
 	"go.tomakado.io/dumbql/query"
 )
@@ -51,12 +52,23 @@ func (m *StructMatcher) MatchField(target any, field string, value query.Valuer,
 	m.lazyInit()
 
 	fieldValue, err := m.router.Route(target, field)
-	if err != nil {
+
+	switch {
+	case op == query.Exists:
+		return err == nil && !isZero(fieldValue)
+	case err != nil:
 		return errors.Is(err, ErrFieldNotFound)
+	default:
+		return m.MatchValue(fieldValue, value, op)
 	}
-	return m.MatchValue(fieldValue, value, op)
 }
 
 func (m *StructMatcher) MatchValue(target any, value query.Valuer, op query.FieldOperator) bool {
 	return value.Match(target, op)
+}
+
+func isZero(tv any) bool {
+	// FIXME: Need to find a way to do it faster
+	v := reflect.ValueOf(tv)
+	return !v.IsValid() || reflect.DeepEqual(v.Interface(), reflect.Zero(v.Type()).Interface())
 }

@@ -9,8 +9,10 @@ AndExpr             <- left:NotExpr rest:(_ ( op:AndOp ) _ NotExpr)*         { r
 AndOp               <- ("AND" / "and")
 NotExpr             <- ("NOT" / "not") _ expr:Primary                        { return &NotExpr{Expr: expr.(Expr)}, nil }
                      / Primary
-Primary             <- ParenExpr / FieldExpr / BoolFieldExpr
+Primary             <- ParenExpr / ExistsExpr / FieldExpr / BoolFieldExpr
 ParenExpr           <- '(' _ expr:Expr _ ')'                                 { return expr.(Expr), nil }
+ExistsExpr          <- field:Identifier _ ExistsOp                           { return parseExistsExpression(field) }
+ExistsOp            <- ("EXISTS" / "exists" / "?")
 FieldExpr           <- field:Identifier _ op:CmpOp _ value:Value             { return parseFieldExpression(field, op, value) }
 BoolFieldExpr       <- field:Identifier                                      { return parseBoolFieldExpr(field) }
 Value               <- OneOfExpr / String / Number / Boolean / Identifier
