@@ -115,32 +115,32 @@ func TestToSql(t *testing.T) { //nolint:funlen
 		{
 			// Field presence operator with ? syntax
 			input:    "name?",
-			want:     "SELECT * FROM dummy_table WHERE ? IS NOT NULL",
-			wantArgs: []any{true},
+			want:     "SELECT * FROM dummy_table WHERE name IS NOT NULL",
+			wantArgs: []any{},
 		},
 		{
 			// Field presence operator with EXISTS keyword
 			input:    "name exists",
-			want:     "SELECT * FROM dummy_table WHERE ? IS NOT NULL",
-			wantArgs: []any{true},
+			want:     "SELECT * FROM dummy_table WHERE name IS NOT NULL",
+			wantArgs: []any{},
 		},
 		{
 			// Negated field presence
 			input:    "not name?",
-			want:     "SELECT * FROM dummy_table WHERE NOT ? IS NOT NULL",
-			wantArgs: []any{true},
+			want:     "SELECT * FROM dummy_table WHERE NOT name IS NOT NULL",
+			wantArgs: []any{},
 		},
 		{
 			// Field presence with AND
 			input:    "name? and age>20",
-			want:     "SELECT * FROM dummy_table WHERE (? IS NOT NULL AND age > ?)",
-			wantArgs: []any{true, float64(20)},
+			want:     "SELECT * FROM dummy_table WHERE (name IS NOT NULL AND age > ?)",
+			wantArgs: []any{float64(20)},
 		},
 		{
 			// Complex expression with field presence
 			input:    "name? and (age>20 or active)",
-			want:     "SELECT * FROM dummy_table WHERE (? IS NOT NULL AND (age > ? OR active = ?))",
-			wantArgs: []any{true, float64(20), true},
+			want:     "SELECT * FROM dummy_table WHERE (name IS NOT NULL AND (age > ? OR active = ?))",
+			wantArgs: []any{float64(20), true},
 		},
 	}
 
