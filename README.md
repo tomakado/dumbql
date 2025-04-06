@@ -231,6 +231,7 @@ is_active:true
 | `!=` or `!:`         | Not equal                     | `int64`, `float64`, `string`, `bool` |
 | `~`                  | "Like" or "contains" operator | `string`                             |
 | `>`, `>=`, `<`, `<=` | Comparison                    | `int64`, `float64`                   |
+| `?` or `exists`      | Field exists and is not zero  | All types                            |
 
 
 ### Boolean operators
@@ -265,6 +266,30 @@ it's more convenient to use equivalent “one of” expressions:
 ```
 occupation: [designer, "ux analyst"]
 ```
+
+### Field presence operator
+
+The field presence operator (`?` or `exists`) checks if a field exists and is not its zero value:
+
+```
+id?              # Checks if ID field exists and is not 0
+name?            # Checks if Name field exists and is not empty string
+description?     # Checks if Description field exists and is not empty string
+count?           # Checks if Count field exists and is not 0
+is_active?       # Checks if IsActive field exists and is not false
+amount?          # Checks if Amount field exists and is not 0.0
+```
+
+You can also use the keyword form: `name exists`
+
+It can be combined with other operators:
+
+```
+name? and age>20
+not email?
+```
+
+In SQL generation, the field presence operator is translated to `IS NOT NULL` clause.
 
 ### Numbers
 
