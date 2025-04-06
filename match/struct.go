@@ -68,7 +68,10 @@ func (m *StructMatcher) MatchValue(target any, value query.Valuer, op query.Fiel
 }
 
 func isZero(tv any) bool {
-	// FIXME: Need to find a way to do it faster
+	if tv == nil {
+		return true
+	}
+
 	v := reflect.ValueOf(tv)
 	return !v.IsValid() || reflect.DeepEqual(v.Interface(), reflect.Zero(v.Type()).Interface())
 }
