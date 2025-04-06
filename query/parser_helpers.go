@@ -139,6 +139,14 @@ func parseOneOfValues(head, tail any) (any, error) {
 	return vals, nil
 }
 
+func parseExistsExpression(ident any) (any, error) {
+	return &FieldExpr{
+		Field: ident.(Identifier),
+		Op:    Exists,
+		Value: &BoolLiteral{BoolValue: true},
+	}, nil
+}
+
 // parseBoolFieldExpr handles the shorthand syntax for boolean fields
 // where a field name alone is interpreted as field = true
 func parseBoolFieldExpr(field any) (any, error) {

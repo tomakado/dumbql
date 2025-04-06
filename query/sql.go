@@ -66,6 +66,8 @@ func (f *FieldExpr) ToSql() (string, []any, error) { //nolint:revive
 		sqlizer = sq.LtOrEq{field: value}
 	case Like:
 		sqlizer = sq.Like{field: value}
+	case Exists:
+		sqlizer = sq.NotEq{f.Field.String(): nil}
 	default:
 		return "", nil, fmt.Errorf("unknown operator %q", f.Op)
 	}

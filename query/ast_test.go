@@ -54,6 +54,7 @@ func TestOperatorString(t *testing.T) {
 		assert.Equal(t, "<", query.LessThan.String())
 		assert.Equal(t, "<=", query.LessThanOrEqual.String())
 		assert.Equal(t, "~", query.Like.String())
+		assert.Equal(t, "exists", query.Exists.String())
 
 		// Test invalid operator (default case)
 		type CustomFieldOp query.FieldOperator

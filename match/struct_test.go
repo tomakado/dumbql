@@ -312,7 +312,21 @@ func TestStructMatcher_MatchField(t *testing.T) { //nolint:funlen
 			op:    query.Equal,
 			want:  true,
 		},
-
+		// Field presence tests
+		{
+			name:  "existing field presence",
+			field: "name",
+			value: nil,
+			op:    query.Exists,
+			want:  true,
+		},
+		{
+			name:  "non-existent field presence",
+			field: "invalid",
+			value: nil,
+			op:    query.Exists,
+			want:  false,
+		},
 		// Nested field tests
 		{
 			name:  "one level nesting",

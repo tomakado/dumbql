@@ -11,6 +11,7 @@ import (
 
 type person struct {
 	Name     string  `dumbql:"name"`
+	Nickname string  `dumbql:"nickname"`
 	Age      int64   `dumbql:"age"`
 	Height   float64 `dumbql:"height"`
 	IsMember bool    `dumbql:"is_member"`
@@ -281,6 +282,51 @@ func TestFieldExpr_Match(t *testing.T) { //nolint:funlen
 				Field: "age",
 				Op:    query.Equal,
 				Value: &query.StringLiteral{StringValue: "30"},
+			},
+			want: false,
+		},
+		{
+			name: "field exists - match",
+			expr: &query.FieldExpr{
+				Field: "name",
+				Op:    query.Exists,
+				Value: nil,
+			},
+			want: true,
+		},
+		{
+			name: "field exists with non-zero value - match",
+			expr: &query.FieldExpr{
+				Field: "age",
+				Op:    query.Exists,
+				Value: nil,
+			},
+			want: true,
+		},
+		{
+			name: "field exists with zero value - no match",
+			expr: &query.FieldExpr{
+				Field: "nickname",
+				Op:    query.Exists,
+				Value: nil,
+			},
+			want: false,
+		},
+		{
+			name: "non-existent field with exists - no match",
+			expr: &query.FieldExpr{
+				Field: "invalid",
+				Op:    query.Exists,
+				Value: nil,
+			},
+			want: false,
+		},
+		{
+			name: "wrong case field with exists - no match",
+			expr: &query.FieldExpr{
+				Field: "Is_Member", // Wrong case compared to the tag
+				Op:    query.Exists,
+				Value: nil,
 			},
 			want: false,
 		},
@@ -646,6 +692,85 @@ func TestOneOfExpr_Match(t *testing.T) { //nolint:funlen
 	}
 }
 
+func TestFieldPresenceWithZeroValues(t *testing.T) { //nolint:funlen
+	type Record struct {
+		ID          int64   `dumbql:"id"`
+		Name        string  `dumbql:"name"`
+		Description string  `dumbql:"description"` // Zero value
+		Count       int64   `dumbql:"count"`       // Zero value
+		IsActive    bool    `dumbql:"is_active"`   // Zero value
+		Amount      float64 `dumbql:"amount"`      // Zero value
+	}
+
+	matcher := &match.StructMatcher{}
+	record := &Record{
+		ID:          1,
+		Name:        "Test Record",
+		Description: "",    // Zero value string
+		Count:       0,     // Zero value int64
+		IsActive:    false, // Zero value bool
+		Amount:      0.0,   // Zero value float64
+	}
+
+	tests := []struct {
+		name  string
+		query string
+		want  bool
+	}{
+		{
+			name:  "non-zero field",
+			query: `id?`,
+			want:  true,
+		},
+		{
+			name:  "another non-zero field",
+			query: `name?`,
+			want:  true,
+		},
+		{
+			name:  "zero string field",
+			query: `description?`,
+			want:  false,
+		},
+		{
+			name:  "zero int field",
+			query: `count?`,
+			want:  false,
+		},
+		{
+			name:  "zero bool field",
+			query: `is_active?`,
+			want:  false,
+		},
+		{
+			name:  "zero float field",
+			query: `amount?`,
+			want:  false,
+		},
+		{
+			name:  "non-existent field",
+			query: `unknown?`,
+			want:  false,
+		},
+		{
+			name:  "complex query with exists operator",
+			query: `id? and description?`,
+			want:  false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ast, err := query.Parse("test", []byte(test.query))
+			require.NoError(t, err)
+			expr := ast.(query.Expr)
+
+			got := expr.Match(record, matcher)
+			assert.Equal(t, test.want, got)
+		})
+	}
+}
+
 func TestStructFieldOmission(t *testing.T) { //nolint:funlen
 	type User struct {
 		ID       int64   `dumbql:"id"`
@@ -698,6 +823,11 @@ func TestStructFieldOmission(t *testing.T) { //nolint:funlen
 			name:  "non-existent field",
 			query: `unknown:"value"`,
 			want:  true,
+		},
+		{
+			name:  "omitted field with exists operator",
+			query: `password?`,
+			want:  false, // Field exists should check actual field presence
 		},
 	}
 
