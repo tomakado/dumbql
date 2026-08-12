@@ -1,8 +1,6 @@
 package query
 
 import (
-	"fmt"
-
 	"go.tomakado.io/dumbql/schema"
 	"go.uber.org/multierr"
 )
@@ -49,9 +47,9 @@ func (n *NotExpr) Validate(schema schema.Schema) (Expr, error) {
 func (f *FieldExpr) Validate(schm schema.Schema) (Expr, error) {
 	field := schema.Field(f.Field)
 
-	rule, ok := schm[field]
-	if !ok {
-		return nil, fmt.Errorf("field %q not found in schema", f.Field)
+	rule, err := schm.GetRule(field)
+	if err != nil {
+		return nil, err
 	}
 
 	oneOf, isOneOf := f.Value.(*OneOfExpr)
@@ -64,7 +62,6 @@ func (f *FieldExpr) Validate(schm schema.Schema) (Expr, error) {
 
 	var (
 		values = make([]Valuer, 0, len(oneOf.Values))
-		err    error
 	)
 
 	for _, v := range oneOf.Values {
