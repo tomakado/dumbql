@@ -381,6 +381,21 @@ func TestFieldExpr_Validate(t *testing.T) { //nolint:funlen
 			require.Error(t, err)
 			require.Nil(t, got)
 		})
+		t.Run("regexp mismatch", func(t *testing.T) {
+			b := schema.NewSchemaBuilder()
+			b.AddRegExpField(`^subject\..*$`, schema.Any())
+			schm := schema.Schema{}
+
+			expr := &query.FieldExpr{
+				Field: "subbjjj3ct.age",
+				Op:    query.Equal,
+				Value: &query.NumberLiteral{NumberValue: 42},
+			}
+
+			got, err := expr.Validate(schm)
+			require.Error(t, err)
+			require.Nil(t, got)
+		})
 	})
 }
 
