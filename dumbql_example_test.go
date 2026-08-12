@@ -20,15 +20,15 @@ func ExampleParse() {
 }
 
 func ExampleQuery_Validate() {
-	schm := schema.Schema{
-		"status": schema.All(
-			schema.Is[string](),
-			schema.EqualsOneOf("pending", "approved", "rejected"),
-		),
-		"period_months": schema.Max(int64(3)),
-		"title":         schema.LenInRange(1, 100),
-		"active":        schema.Is[bool](),
-	}
+	b := schema.NewSchemaBuilder()
+	b.AddField("status", schema.All(
+		schema.Is[string](),
+		schema.EqualsOneOf("pending", "approved", "rejected"),
+	))
+	b.AddField("period_months", schema.Max(int64(3)))
+	b.AddField("title", schema.LenInRange(1, 100))
+	b.AddField("active", schema.Is[bool]())
+	schm := b.Build()
 
 	// The following query is invalid against the schema:
 	// 	- period_months == 4, but max allowed value is 3
