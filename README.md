@@ -81,7 +81,6 @@ func main() {
     validated, err := expr.Validate(schm)
     fmt.Println(validated)
     fmt.Printf("validation error: %v\n", err)
-    // Output: 
     // Output: (and (and (= status "pending") (> salary.gross 60000)) (= title "hello world"))
     // validation error: field "period_months": value must be equal or less than 3, got 4; field "name" not found in schema
 }
