@@ -57,21 +57,22 @@ import (
 )
 
 func main() {
-    schm := schema.Schema{
-        "status": schema.All(
+    b := schema.NewSchemaBuilder()
+    b.AddField("status", schema.All(
             schema.Is[string](),
             schema.EqualsOneOf("pending", "approved", "rejected"),
-        ),
-        "period_months": schema.Max(int64(3)),
-        "title":         schema.LenInRange(1, 100),
-    }
+        ))
+    b.AddField("period_months", schema.Max(int64(3)))
+    b.AddField("title", schema.LenInRange(1, 100))
+    b.AddRegExpField(`^salary\..*$`, schema.Is[float64]())
+    schm := b.Build()
 
     // The following query is invalid against the schema:
     // 	- period_months == 4, but max allowed value is 3
     // 	- field `name` is not described in the schema
     //
     // Invalid parts of the query are dropped.
-    const q = `status:pending and period_months:4 and (title:"hello world" or name:"John Doe")`
+    const q = `status:pending and period_months:4 and salary.gross>60000 and (title:"hello world" or name:"John Doe")`
     expr, err := dumbql.Parse(q)
     if err != nil {
         panic(err)
@@ -81,7 +82,7 @@ func main() {
     fmt.Println(validated)
     fmt.Printf("validation error: %v\n", err)
     // Output: 
-    // (and (= status "pending") (= title "hello world"))
+    // Output: (and (and (= status "pending") (> salary.gross 60000)) (= title "hello world"))
     // validation error: field "period_months": value must be equal or less than 3, got 4; field "name" not found in schema
 }
 ```
